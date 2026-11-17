@@ -1,0 +1,124 @@
+import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/task_model.dart';
+import '../models/attendance_model.dart';
+import '../models/note_model.dart';
+import '../models/notification_item_model.dart';
+import 'dummy_data_service.dart';
+
+class StorageService extends GetxService {
+  late SharedPreferences _prefs;
+  late Box<TaskModel> _taskBox;
+  late Box<AttendanceModel> _attendanceBox;
+  late Box<NoteModel> _noteBox;
+  late Box<NotificationItemModel> _notificationBox;
+
+  Box<TaskModel> get taskBox => _taskBox;
+  Box<AttendanceModel> get attendanceBox => _attendanceBox;
+  Box<NoteModel> get noteBox => _noteBox;
+  Box<NotificationItemModel> get notificationBox => _notificationBox;
+  SharedPreferences get prefs => _prefs;
+
+  Future<StorageService> init() async {
+    // 1. Initialize Hive
+    await Hive.initFlutter();
+
+    // 2. Register Adapters
+    if (!Hive.isAdapterRegistered(0)) {
+      Hive.registerAdapter(TaskModelAdapter());
+    }
+    if (!Hive.isAdapterRegistered(1)) {
+      Hive.registerAdapter(AttendanceModelAdapter());
+    }
+    if (!Hive.isAdapterRegistered(2)) {
+      Hive.registerAdapter(NoteModelAdapter());
+    }
+    if (!Hive.isAdapterRegistered(3)) {
+      Hive.registerAdapter(NotificationItemModelAdapter());
+    }
+
+    // 3. Open Hive Boxes
+    _taskBox = await Hive.openBox<TaskModel>('tasks');
+    _attendanceBox = await Hive.openBox<AttendanceModel>('attendances');
+    _noteBox = await Hive.openBox<NoteModel>('notes');
+    _notificationBox = await Hive.openBox<NotificationItemModel>('notifications');
+
+    // 4. Initialize SharedPreferences
+    _prefs = await SharedPreferences.getInstance();
+
+    // 5. Seed initial data if first run
+    final isInitialized = _prefs.getBool('is_app_initialized') ?? false;
+    if (!isInitialized || _taskBox.isEmpty) {
+      await _seedInitialData();
+      await _prefs.setBool('is_app_initialized', true);
+    }
+
+    return this;
+  }
+
+  Future<void> _seedInitialData() async {
+    await _taskBox.clear();
+    for (final task in DummyDataService.initialTasks) {
+      await _taskBox.put(task.id, task);
+    }
+
+    await _attendanceBox.clear();
+    for (final att in DummyDataService.initialAttendances) {
+      await _attendanceBox.put(att.id, att);
+    }
+
+    await _noteBox.clear();
+    for (final note in DummyDataService.initialNotes) {
+      await _noteBox.put(note.id, note);
+    }
+
+    await _notificationBox.clear();
+    for (final notif in DummyDataService.initialNotifications) {
+      await _notificationBox.put(notif.id, notif);
+    }
+
+    // Default Profile Data
+    if (!_prefs.containsKey('user_name')) {
+      await _prefs.setString('user_name', 'Titut');
+      await _prefs.setString('user_nim', '123220001');
+      await _prefs.setString('user_email', 'titut.student@upnyk.ac.id');
+      await _prefs.setString('user_major', 'Sistem Informasi');
+      await _prefs.setString('user_semester', 'Semester 5');
+      await _prefs.setBool('is_pin_enabled', false);
+      await _prefs.setString('app_pin', '1234');
+    }
+  }
+
+  // Profile & PIN helpers
+  String get userName => _prefs.getString('user_name') ?? 'Titut';
+  String get userNim => _prefs.getString('user_nim') ?? '123220001';
+  String get userEmail => _prefs.getString('user_email') ?? 'titut.student@upnyk.ac.id';
+  String get userMajor => _prefs.getString('user_major') ?? 'Sistem Informasi';
+  String get userSemester => _prefs.getString('user_semester') ?? 'Semester 5';
+  bool get isPinEnabled => _prefs.getBool('is_pin_enabled') ?? false;
+  String get appPin => _prefs.getString('app_pin') ?? '1234';
+
+  Future<void> setProfile({
+    required String name,
+    required String nim,
+    required String email,
+    required String major,
+    required String semester,
+  }) async {
+    await _prefs.setString('user_name', name);
+    await _prefs.setString('user_nim', nim);
+    await _prefs.setString('user_email', email);
+    await _prefs.setString('user_major', major);
+    await _prefs.setString('user_semester', semester);
+  }
+
+  Future<void> setPinEnabled(bool enabled) async {
+    await _prefs.setBool('is_pin_enabled', enabled);
+  }
+
+  Future<void> setAppPin(String pin) async {
+    await _prefs.setString('app_pin', pin);
+  }
+}
+
