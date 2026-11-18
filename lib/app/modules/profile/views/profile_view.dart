@@ -13,10 +13,10 @@ import '../../../global_widgets/toggle_row.dart';
 import '../../../routes/app_routes.dart';
 import '../profile_controller.dart';
 
-/// Profil Mahasiswa screen matching Layar 21 (21_profil.html):
+/// Profil screen matching Stitch monochrome design:
 /// - FormTopBar(title: 'Profil')
 /// - Centered 96x96 Avatar with 32x32 camera badge
-/// - Name, email + semester subtitle, and Edit Profil pill button
+/// - Name and Edit Profil pill button
 /// - 2 Stat Tiles (Tugas Selesai in stat-light, Tugas Aktif in stat-dark) with SineWavePainter
 /// - KEAMANAN group (Kunci Aplikasi PIN toggle, Ubah PIN row, Notifikasi toggle)
 /// - DATA group (Bersihkan Tugas Selesai row, Tentang TaskFlow row)
@@ -77,12 +77,6 @@ class _ProfileViewState extends State<ProfileView> {
                 final initial = controller.name.value.isNotEmpty
                     ? controller.name.value[0].toUpperCase()
                     : 'T';
-                final emailText = controller.email.value.isNotEmpty
-                    ? controller.email.value
-                    : 'titut.student@taskflow.id';
-                final semesterText = controller.semester.value.isNotEmpty
-                    ? controller.semester.value
-                    : 'Semester 5';
 
                 return ListView(
                   padding: const EdgeInsets.symmetric(
@@ -201,19 +195,7 @@ class _ProfileViewState extends State<ProfileView> {
                           ),
                         ),
 
-                        const SizedBox(height: 4),
-
-                        // Subtext: email • semester
-                        Text(
-                          '$emailText • $semesterText',
-                          style: AppTypography.captionMeta.copyWith(
-                            fontSize: 13,
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
 
                         // Edit Profil Pill Button
                         GestureDetector(

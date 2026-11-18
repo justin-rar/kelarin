@@ -223,8 +223,6 @@ class PinController extends GetxController {
   // LUPA PIN VERIFICATION DIALOG & RESET LOGIC
   // ---------------------------------------------------------------------------
   void openForgotPinModal(BuildContext context) {
-    final nimInput = TextEditingController();
-    final emailInput = TextEditingController();
     final securityInput = TextEditingController();
     final modalError = ''.obs;
 
@@ -262,54 +260,10 @@ class PinController extends GetxController {
               ),
               const SizedBox(height: 6),
               Text(
-                'Masukkan informasi pribadi profil Anda untuk mengonfirmasi identitas:',
+                'Masukkan jawaban pertanyaan keamanan yang telah Anda atur untuk memverifikasi identitas:',
                 style: AppTypography.bodyDefault.copyWith(color: AppColors.secondary),
               ),
               const SizedBox(height: 16),
-
-              // Field NIM
-              Text('NIM Terdaftar *', style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary)),
-              const SizedBox(height: 6),
-              Container(
-                height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.fill1,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: TextField(
-                  controller: nimInput,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    hintText: 'Contoh: 123220001',
-                    border: InputBorder.none,
-                    isDense: true,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Field Email
-              Text('Email Terdaftar *', style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary)),
-              const SizedBox(height: 6),
-              Container(
-                height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.fill1,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: TextField(
-                  controller: emailInput,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    hintText: 'nama@student.upnyk.ac.id',
-                    border: InputBorder.none,
-                    isDense: true,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
 
               // Pertanyaan Keamanan
               Text(
@@ -362,21 +316,13 @@ class PinController extends GetxController {
                     ),
                   ),
                   onPressed: () {
-                    final enteredNim = nimInput.text.trim();
-                    final enteredEmail = emailInput.text.trim().toLowerCase();
                     final enteredAnswer = securityInput.text.trim().toLowerCase();
-
-                    final registeredNim = _storage.userNim.trim();
-                    final registeredEmail = _storage.userEmail.trim().toLowerCase();
                     final registeredAnswer = _storage.securityAnswer.trim().toLowerCase();
 
-                    // Verification logic
-                    final bool isNimMatch = enteredNim == registeredNim;
-                    final bool isEmailMatch = enteredEmail == registeredEmail;
                     final bool isAnswerMatch =
                         registeredAnswer.isNotEmpty && enteredAnswer == registeredAnswer;
 
-                    if (isAnswerMatch || (isNimMatch && isEmailMatch)) {
+                    if (isAnswerMatch) {
                       Get.back(); // close sheet
                       // Switch PinController to Reset Setup mode
                       isForgotPinReset = true;
@@ -391,7 +337,7 @@ class PinController extends GetxController {
                       );
                     } else {
                       modalError.value =
-                          'Data verifikasi tidak cocok dengan profil terdaftar. Pastikan NIM dan Email/Jawaban benar.';
+                          'Jawaban keamanan tidak cocok dengan yang terdaftar. Pastikan ejaan benar.';
                     }
                   },
                   child: Text(
