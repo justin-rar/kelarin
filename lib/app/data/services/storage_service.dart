@@ -87,6 +87,10 @@ class StorageService extends GetxService {
       await _prefs.setString('user_semester', 'Semester 5');
       await _prefs.setBool('is_pin_enabled', false);
       await _prefs.setString('app_pin', '1234');
+      await _prefs.setString('security_question', 'Nama Ibu Kandung');
+      await _prefs.setString('security_answer', 'Siti');
+      await _prefs.setBool('is_profile_setup_done', false);
+      await _prefs.setStringList('pin_history', []);
     }
   }
 
@@ -98,6 +102,20 @@ class StorageService extends GetxService {
   String get userSemester => _prefs.getString('user_semester') ?? 'Semester 5';
   bool get isPinEnabled => _prefs.getBool('is_pin_enabled') ?? false;
   String get appPin => _prefs.getString('app_pin') ?? '1234';
+  bool get isProfileSetupDone => _prefs.getBool('is_profile_setup_done') ?? false;
+  String get securityQuestion =>
+      _prefs.getString('security_question') ?? 'Nama Ibu Kandung';
+  String get securityAnswer => _prefs.getString('security_answer') ?? '';
+  List<String> get pinHistory => _prefs.getStringList('pin_history') ?? [];
+  String? get profileImagePath => _prefs.getString('profile_image_path');
+
+  Future<void> setProfileImagePath(String? path) async {
+    if (path == null || path.isEmpty) {
+      await _prefs.remove('profile_image_path');
+    } else {
+      await _prefs.setString('profile_image_path', path);
+    }
+  }
 
   Future<void> setProfile({
     required String name,
@@ -113,12 +131,32 @@ class StorageService extends GetxService {
     await _prefs.setString('user_semester', semester);
   }
 
+  Future<void> setProfileSetupDone(bool done) async {
+    await _prefs.setBool('is_profile_setup_done', done);
+  }
+
+  Future<void> setSecurityInfo(String question, String answer) async {
+    await _prefs.setString('security_question', question);
+    await _prefs.setString('security_answer', answer.trim().toLowerCase());
+  }
+
   Future<void> setPinEnabled(bool enabled) async {
     await _prefs.setBool('is_pin_enabled', enabled);
   }
 
-  Future<void> setAppPin(String pin) async {
-    await _prefs.setString('app_pin', pin);
+  Future<void> setAppPin(String newPin) async {
+    final currentPin = _prefs.getString('app_pin') ?? '';
+    final history = List<String>.from(pinHistory);
+    if (currentPin.isNotEmpty && !history.contains(currentPin)) {
+      history.add(currentPin);
+      await _prefs.setStringList('pin_history', history);
+    }
+    await _prefs.setString('app_pin', newPin);
+  }
+
+  bool isPinInHistory(String candidate) {
+    final currentPin = appPin;
+    if (candidate == currentPin) return true;
+    return pinHistory.contains(candidate);
   }
 }
-

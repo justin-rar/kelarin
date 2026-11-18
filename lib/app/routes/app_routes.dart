@@ -1,5 +1,6 @@
 abstract class AppRoutes {
   static const splash = '/splash';
+  static const onboarding = '/onboarding';
   static const pin = '/pin';
   static const main = '/main';
   static const taskAdd = '/task/add';
@@ -12,5 +13,6 @@ abstract class AppRoutes {
   static const profileEdit = '/profile/edit';
   static const profileAbout = '/profile/about';
   static const notification = '/notification';
+  static const ai = '/ai';
 }
 

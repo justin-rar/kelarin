@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/app_shadows.dart';
+import '../../../core/theme/app_typography.dart';
 import '../../../data/models/attendance_model.dart';
+import '../../../global_widgets/app_form_field.dart';
+import '../../../global_widgets/form_top_bar.dart';
+import '../../../global_widgets/segmented_selector.dart';
+import '../../../global_widgets/sticky_action_bar.dart';
+import '../../../global_widgets/toggle_row.dart';
 import '../attendance_controller.dart';
 
 class AddAttendanceView extends StatefulWidget {
@@ -13,23 +21,36 @@ class AddAttendanceView extends StatefulWidget {
 }
 
 class _AddAttendanceViewState extends State<AddAttendanceView> {
-  final AttendanceController controller = Get.find<AttendanceController>();
+  late final AttendanceController controller;
 
   final TextEditingController subjectController = TextEditingController();
-  final TextEditingController timeController = TextEditingController();
+  final TextEditingController classController = TextEditingController();
   final TextEditingController roomController = TextEditingController();
 
-  String selectedDay = 'Senin';
-  String selectedType = 'Praktikum';
-  bool reminderActive = true;
+  DateTime selectedDate = DateTime.now();
+  TimeOfDay selectedTime = const TimeOfDay(hour: 8, minute: 0);
 
-  final List<String> days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  String selectedType = 'Praktikum';
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.isRegistered<AttendanceController>()
+        ? Get.find<AttendanceController>()
+        : Get.put(AttendanceController(), permanent: true);
+  }
+
+  // Toggle rows
+  bool notifyAtStart = true;
+  bool notify15Min = true;
+  bool notify30Min = false;
+
   final List<String> types = ['Praktikum', 'Teori'];
 
   @override
   void dispose() {
     subjectController.dispose();
-    timeController.dispose();
+    classController.dispose();
     roomController.dispose();
     super.dispose();
   }
@@ -41,24 +62,34 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
         'Perhatian',
         'Nama mata kuliah wajib diisi!',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: AppColors.error,
-        colorText: AppColors.onError,
+        backgroundColor: AppColors.primary,
+        colorText: AppColors.onPrimary,
       );
       return;
     }
+
+    final dayName = DateFormat('EEEE', 'id_ID').format(selectedDate);
+    final startTimeStr = '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}';
+    // Estimated end time 1h40m later
+    final endHour = (selectedTime.hour + 1 + (selectedTime.minute + 40 >= 60 ? 1 : 0)) % 24;
+    final endMinute = (selectedTime.minute + 40) % 60;
+    final endTimeStr = '${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')}';
+    final timeStr = '$startTimeStr - $endTimeStr WIB';
+
+    final className = classController.text.trim().isNotEmpty
+        ? 'Kelas ${classController.text.trim()}'
+        : dayName;
 
     final newAttendance = AttendanceModel(
       id: 'att_${DateTime.now().millisecondsSinceEpoch}',
       subjectName: name,
       type: selectedType,
-      day: selectedDay,
-      time: timeController.text.trim().isNotEmpty
-          ? timeController.text.trim()
-          : '08:00 - 10:00 WIB',
+      day: className,
+      time: timeStr,
       room: roomController.text.trim().isNotEmpty
           ? roomController.text.trim()
           : 'Lab Komputer',
-      reminderActive: reminderActive,
+      reminderActive: notifyAtStart || notify15Min || notify30Min,
       attendedMeetings: 0,
       totalMeetings: 14,
     );
@@ -71,183 +102,187 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Center(
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                shape: BoxShape.circle,
-                boxShadow: const [AppColors.cardShadow],
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, size: 20, color: AppColors.primary),
-                onPressed: () => Get.back(),
-              ),
-            ),
-          ),
-        ),
-        title: const Text(
-          'Tambah Jadwal Presensi',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-        ),
-      ),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
+            // Standard FormTopBar (64px, arrow_back, modal-title)
+            const FormTopBar(title: 'Tambah Absen'),
+
+            // Scrollable Form Fields
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(AppDimens.margin),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimens.margin,
+                  vertical: 16,
+                ),
                 children: [
-                  _buildLabel('MATA KULIAH *'),
-                  _buildTextInput(
+                  // 1. Nama Mata Kuliah *
+                  AppFormField(
+                    label: 'Nama Mata Kuliah',
+                    isRequired: true,
+                    placeholder: 'Contoh: Pemrograman Web Lanjut',
                     controller: subjectController,
-                    hint: 'Contoh: Pemrograman Aplikasi Mobile',
-                    icon: Icons.school_outlined,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  _buildLabel('TIPE KELAS'),
+                  // 2. Kelas & Ruangan (2 Kolom)
                   Row(
-                    children: types.map((t) {
-                      final isSelected = selectedType == t;
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: InkWell(
-                            onTap: () => setState(() => selectedType = t),
-                            borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                            child: Container(
-                              height: 42,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isSelected ? AppColors.primary : AppColors.fill1,
-                                borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                              ),
-                              child: Text(
-                                t,
-                                style: TextStyle(
-                                  color: isSelected ? AppColors.onPrimary : AppColors.secondary,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
+                    children: [
+                      Expanded(
+                        child: AppFormField(
+                          label: 'Kelas',
+                          isRequired: true,
+                          placeholder: 'Contoh: 4A',
+                          controller: classController,
+                        ),
+                      ),
+                      const SizedBox(width: AppDimens.gutter),
+                      Expanded(
+                        child: AppFormField(
+                          label: 'Ruangan',
+                          isRequired: true,
+                          placeholder: 'Lab Komputer 3',
+                          controller: roomController,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 3. Jadwal & Waktu (2 Kolom button style)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'JADWAL & WAKTU',
+                      style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: _pickDate,
+                          child: Container(
+                            height: 52,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(AppDimens.radiusInput),
+                              boxShadow: const [AppShadows.field],
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.secondary),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    DateFormat('d MMM yyyy').format(selectedDate),
+                                    style: AppTypography.bodyDefault.copyWith(fontWeight: FontWeight.w600),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 20),
-
-                  _buildLabel('HARI KULIAH'),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: days.map((d) {
-                      final isSelected = selectedDay == d;
-                      return ChoiceChip(
-                        label: Text(d),
-                        selected: isSelected,
-                        selectedColor: AppColors.primary,
-                        backgroundColor: AppColors.fill1,
-                        labelStyle: TextStyle(
-                          color: isSelected ? AppColors.onPrimary : AppColors.secondary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
+                      ),
+                      const SizedBox(width: AppDimens.gutter),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: _pickTime,
+                          child: Container(
+                            height: 52,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(AppDimens.radiusInput),
+                              boxShadow: const [AppShadows.field],
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.schedule_outlined, size: 18, color: AppColors.secondary),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')} WIB',
+                                    style: AppTypography.bodyDefault.copyWith(fontWeight: FontWeight.w600),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                          side: BorderSide.none,
-                        ),
-                        showCheckmark: false,
-                        onSelected: (_) => setState(() => selectedDay = d),
-                      );
-                    }).toList(),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  _buildLabel('JAM KULIAH'),
-                  _buildTextInput(
-                    controller: timeController,
-                    hint: 'Contoh: 08:00 - 10:00 WIB',
-                    icon: Icons.access_time_rounded,
+                  // 4. Tipe Kelas *
+                  SegmentedSelector(
+                    label: 'Tipe Kelas *',
+                    options: types,
+                    selectedOption: selectedType,
+                    columns: 2,
+                    onSelected: (t) => setState(() => selectedType = t),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  _buildLabel('RUANGAN / LAB'),
-                  _buildTextInput(
-                    controller: roomController,
-                    hint: 'Contoh: Lab Komputer 3',
-                    icon: Icons.location_on_outlined,
+                  // 5. Notifikasi Absen (Card 24px with ToggleRows)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'NOTIFIKASI ABSEN',
+                      style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Reminder Toggle
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                      boxShadow: const [AppColors.cardShadow],
+                      borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+                      boxShadow: const [AppShadows.standard],
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
                       children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.notifications_active_outlined, size: 20, color: AppColors.primary),
-                            SizedBox(width: 12),
-                            Text(
-                              'Aktifkan Pengingat Kelas',
-                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-                            ),
-                          ],
+                        ToggleRow(
+                          label: 'Saat kuliah dimulai',
+                          icon: Icons.notifications_none_rounded,
+                          value: notifyAtStart,
+                          onChanged: (v) => setState(() => notifyAtStart = v),
                         ),
-                        Switch(
-                          value: reminderActive,
-                          activeThumbColor: AppColors.primary,
-                          onChanged: (val) => setState(() => reminderActive = val),
+                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        ToggleRow(
+                          label: '15 menit sebelum',
+                          icon: Icons.notifications_none_rounded,
+                          value: notify15Min,
+                          onChanged: (v) => setState(() => notify15Min = v),
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        ToggleRow(
+                          label: '30 menit sebelum',
+                          icon: notify30Min
+                              ? Icons.notifications_none_rounded
+                              : Icons.notifications_off_outlined,
+                          value: notify30Min,
+                          onChanged: (v) => setState(() => notify30Min = v),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
 
-            // Sticky Bottom
-            Container(
-              padding: const EdgeInsets.all(AppDimens.margin),
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Color.fromRGBO(0, 0, 0, 0.05),
-                    blurRadius: 16,
-                    offset: Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: _saveAttendance,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.onPrimary,
-                  elevation: 0,
-                  minimumSize: const Size(double.infinity, 52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                  ),
-                ),
-                child: const Text(
-                  'Simpan Jadwal',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                ),
-              ),
+            // Standard StickyActionBar
+            StickyActionBar(
+              primaryLabel: 'Simpan Absen',
+              onPrimaryTap: _saveAttendance,
+              secondaryLabel: 'Batal',
+              onSecondaryTap: () => Get.back(),
             ),
           ],
         ),
@@ -255,53 +290,51 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
     );
   }
 
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8, left: 2),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          color: AppColors.secondary,
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextInput({
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-  }) {
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-        boxShadow: const [AppColors.cardShadow],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.secondary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: const TextStyle(color: AppColors.tertiary, fontSize: 13),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2024),
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: AppColors.onPrimary,
+              surface: AppColors.surface,
+              onSurface: AppColors.onSurface,
             ),
           ),
-        ],
-      ),
+          child: child!,
+        );
+      },
     );
+    if (picked != null) {
+      setState(() => selectedDate = picked);
+    }
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: selectedTime,
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: AppColors.onPrimary,
+              surface: AppColors.surface,
+              onSurface: AppColors.onSurface,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() => selectedTime = picked);
+    }
   }
 }

@@ -91,7 +91,7 @@ class TaskModel {
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
       dateTime: map['dateTime'] != null
-          ? DateTime.parse(map['dateTime'].toString())
+          ? (DateTime.tryParse(map['dateTime'].toString()) ?? DateTime.now())
           : DateTime.now(),
       timeString: map['timeString']?.toString() ?? '',
       location: map['location']?.toString() ?? '',
@@ -99,7 +99,7 @@ class TaskModel {
       priority: map['priority']?.toString() ?? '= Sedang',
       isCompleted: map['isCompleted'] == true,
       completedAt: map['completedAt'] != null
-          ? DateTime.parse(map['completedAt'].toString())
+          ? DateTime.tryParse(map['completedAt'].toString())
           : null,
       note: map['note']?.toString(),
     );
@@ -117,16 +117,24 @@ class TaskModelAdapter extends TypeAdapter<TaskModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return TaskModel(
-      id: fields[0] as String,
-      title: fields[1] as String,
-      dateTime: fields[2] as DateTime,
-      timeString: fields[3] as String,
-      location: fields[4] as String,
-      category: fields[5] as String,
-      priority: fields[6] as String,
-      isCompleted: fields[7] as bool,
-      completedAt: fields[8] as DateTime?,
-      note: fields[9] as String?,
+      id: fields[0]?.toString() ?? '',
+      title: fields[1]?.toString() ?? '',
+      dateTime: fields[2] is DateTime
+          ? fields[2] as DateTime
+          : (fields[2] != null
+              ? (DateTime.tryParse(fields[2].toString()) ?? DateTime.now())
+              : DateTime.now()),
+      timeString: fields[3]?.toString() ?? '',
+      location: fields[4]?.toString() ?? '',
+      category: fields[5]?.toString() ?? 'Kuliah',
+      priority: fields[6]?.toString() ?? '= Sedang',
+      isCompleted: fields[7] == true,
+      completedAt: fields[8] is DateTime
+          ? fields[8] as DateTime
+          : (fields[8] != null
+              ? DateTime.tryParse(fields[8].toString())
+              : null),
+      note: fields[9]?.toString(),
     );
   }
 

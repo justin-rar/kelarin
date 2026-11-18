@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/constants/app_colors.dart';
 import '../../global_widgets/floating_bottom_nav.dart';
+import '../../global_widgets/quick_action_sheet.dart';
 import '../attendance/views/attendance_view.dart';
 import '../home/home_view.dart';
 import '../note/views/note_view.dart';
@@ -26,9 +27,19 @@ class MainNavigationView extends GetView<MainNavController> {
         children: [
           // Current Tab Page View
           Obx(() => IndexedStack(
-            index: controller.currentIndex.value,
-            children: pages,
-          )),
+                index: controller.currentIndex.value,
+                children: pages,
+              )),
+
+          // Aksi Cepat Overlay (Opens above nav, behind crisp header and FAB)
+          Obx(() {
+            if (controller.isAksiCepatOpen.value) {
+              return QuickActionSheet(
+                onClose: controller.closeAksiCepat,
+              );
+            }
+            return const SizedBox.shrink();
+          }),
 
           // Floating Bottom Navigation Bar
           Positioned(
@@ -36,14 +47,14 @@ class MainNavigationView extends GetView<MainNavController> {
             right: 0,
             bottom: 0,
             child: Obx(() => FloatingBottomNav(
-              currentIndex: controller.currentIndex.value,
-              onTabSelected: controller.changeTab,
-              onAddTap: () => controller.openAddActionMenu(context),
-            )),
+                  currentIndex: controller.currentIndex.value,
+                  onTabSelected: controller.changeTab,
+                  onAddTap: controller.toggleAksiCepat,
+                  isAksiCepatOpen: controller.isAksiCepatOpen.value,
+                )),
           ),
         ],
       ),
     );
   }
 }
-

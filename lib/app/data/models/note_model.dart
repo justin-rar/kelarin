@@ -64,7 +64,7 @@ class NoteModel {
       title: map['title']?.toString() ?? '',
       content: map['content']?.toString() ?? '',
       updatedAt: map['updatedAt'] != null
-          ? DateTime.parse(map['updatedAt'].toString())
+          ? (DateTime.tryParse(map['updatedAt'].toString()) ?? DateTime.now())
           : DateTime.now(),
       category: map['category']?.toString() ?? 'Kuliah',
       isPinned: map['isPinned'] == true,
@@ -83,12 +83,16 @@ class NoteModelAdapter extends TypeAdapter<NoteModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return NoteModel(
-      id: fields[0] as String,
-      title: fields[1] as String,
-      content: fields[2] as String,
-      updatedAt: fields[3] as DateTime,
-      category: fields[4] as String,
-      isPinned: fields[5] as bool,
+      id: fields[0]?.toString() ?? '',
+      title: fields[1]?.toString() ?? '',
+      content: fields[2]?.toString() ?? '',
+      updatedAt: fields[3] is DateTime
+          ? fields[3] as DateTime
+          : (fields[3] != null
+              ? (DateTime.tryParse(fields[3].toString()) ?? DateTime.now())
+              : DateTime.now()),
+      category: fields[4]?.toString() ?? 'Kuliah',
+      isPinned: fields[5] == true,
     );
   }
 

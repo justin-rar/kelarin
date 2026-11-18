@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_dimens.dart';
+import '../core/constants/app_shadows.dart';
+import '../core/theme/app_typography.dart';
 
+/// FloatingBottomNav 5-slot navigation bar.
+/// 72px high, 32px radius, floating above content.
+/// Center button is a 56x56 black FAB raised 8px with CTA shadow.
+/// Acuan: design/DESIGN.md
 class FloatingBottomNav extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTabSelected;
   final VoidCallback onAddTap;
+  final bool isAksiCepatOpen;
 
   const FloatingBottomNav({
     super.key,
     required this.currentIndex,
     required this.onTabSelected,
     required this.onAddTap,
+    this.isAksiCepatOpen = false,
   });
 
   @override
@@ -26,13 +34,7 @@ class FloatingBottomNav extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppDimens.radiusNav),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(0, 0, 0, 0.08),
-            blurRadius: 24,
-            offset: Offset(0, 8),
-          ),
-        ],
+        boxShadow: const [AppShadows.standard],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -41,19 +43,19 @@ class FloatingBottomNav extends StatelessWidget {
           _buildNavItem(
             index: 0,
             icon: Icons.home_outlined,
-            activeIcon: Icons.home_rounded,
+            activeIcon: Icons.home,
             label: 'Home',
           ),
 
           // Tab 1: Selesai
           _buildNavItem(
             index: 1,
-            icon: Icons.task_alt_outlined,
-            activeIcon: Icons.task_alt_rounded,
+            icon: Icons.task_alt,
+            activeIcon: Icons.task_alt,
             label: 'Selesai',
           ),
 
-          // Center Button: [+]
+          // Center Button: [+] or [x] when Aksi Cepat is open
           GestureDetector(
             onTap: onAddTap,
             child: Container(
@@ -62,20 +64,18 @@ class FloatingBottomNav extends StatelessWidget {
               transform: Matrix4.translationValues(0.0, -8.0, 0.0),
               decoration: BoxDecoration(
                 color: AppColors.primary,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color.fromRGBO(0, 0, 0, 0.18),
-                    blurRadius: 16,
-                    offset: Offset(0, 6),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(AppDimens.radiusFab),
+                boxShadow: const [AppShadows.cta],
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.add_rounded,
-                  color: AppColors.onPrimary,
-                  size: 28,
+              child: Center(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 150),
+                  child: Icon(
+                    isAksiCepatOpen ? Icons.close : Icons.add,
+                    key: ValueKey<bool>(isAksiCepatOpen),
+                    color: AppColors.onPrimary,
+                    size: 28,
+                  ),
                 ),
               ),
             ),
@@ -85,15 +85,15 @@ class FloatingBottomNav extends StatelessWidget {
           _buildNavItem(
             index: 2,
             icon: Icons.calendar_today_outlined,
-            activeIcon: Icons.calendar_today_rounded,
+            activeIcon: Icons.calendar_today,
             label: 'Absen',
           ),
 
           // Tab 3: Catatan
           _buildNavItem(
             index: 3,
-            icon: Icons.edit_note_rounded,
-            activeIcon: Icons.edit_note_rounded,
+            icon: Icons.edit_note,
+            activeIcon: Icons.edit_note,
             label: 'Catatan',
           ),
         ],
@@ -110,25 +110,23 @@ class FloatingBottomNav extends StatelessWidget {
     final bool isActive = currentIndex == index;
 
     return Expanded(
-      child: InkWell(
+      child: GestureDetector(
         onTap: () => onTabSelected(index),
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
+        behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               isActive ? activeIcon : icon,
               size: 24,
-              color: isActive ? AppColors.primary : AppColors.tertiary,
+              color: isActive ? AppColors.primary : AppColors.outline,
             ),
             const SizedBox(height: 2),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: isActive ? AppColors.primary : AppColors.tertiary,
+              style: AppTypography.navLabel.copyWith(
+                color: isActive ? AppColors.primary : AppColors.outline,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
               ),
             ),
             const SizedBox(height: 3),
@@ -147,4 +145,3 @@ class FloatingBottomNav extends StatelessWidget {
     );
   }
 }
-

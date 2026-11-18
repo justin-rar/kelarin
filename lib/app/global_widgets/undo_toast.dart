@@ -2,23 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_dimens.dart';
+import '../core/constants/app_shadows.dart';
+import '../core/theme/app_typography.dart';
 
+/// Floating Toast matching DESIGN.md:
+/// Floats above the BottomNav, 56px high, black, 20px radius, white content.
+/// Leading check_circle + 14px bold message, trailing action (Urungkan button or close icon).
 class UndoToast {
   UndoToast._();
 
   static void show({
     required String message,
-    String actionLabel = 'Urungkan',
-    VoidCallback? onUndo,
+    String? actionLabel = 'Urungkan',
+    VoidCallback? onAction,
+    VoidCallback? onUndo, // Backward compatibility alias
+    bool showClose = false,
     Duration duration = const Duration(seconds: 4),
   }) {
+    final effectiveCallback = onUndo ?? onAction;
+
     Get.rawSnackbar(
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: Colors.transparent,
       margin: const EdgeInsets.only(
         left: AppDimens.margin,
         right: AppDimens.margin,
-        bottom: 96, // Floats cleanly right above the 72px floating bottom nav
+        bottom: 96, // Floats cleanly above the 72px floating bottom nav
       ),
       padding: EdgeInsets.zero,
       duration: duration,
@@ -27,62 +36,63 @@ class UndoToast {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: AppColors.primary,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: const [
-            BoxShadow(
-              color: Color.fromRGBO(0, 0, 0, 0.25),
-              blurRadius: 20,
-              offset: Offset(0, 6),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(AppDimens.radiusFab),
+          boxShadow: const [AppShadows.toast],
         ),
         child: Row(
           children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: const BoxDecoration(
-                color: Color(0xFF262626),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_rounded,
-                size: 16,
-                color: AppColors.onPrimary,
-              ),
+            // Leading check_circle icon
+            const Icon(
+              Icons.check_circle,
+              size: 20,
+              color: AppColors.onPrimary,
             ),
             const SizedBox(width: 12),
+
+            // Message text (14px bold white)
             Expanded(
               child: Text(
                 message,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: AppTypography.buttonText.copyWith(
                   color: AppColors.onPrimary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
-            if (onUndo != null) ...[
+
+            // Trailing action: bold text button or close icon
+            if (effectiveCallback != null) ...[
               const SizedBox(width: 8),
-              TextButton(
-                onPressed: () {
+              GestureDetector(
+                onTap: () {
                   Get.back();
-                  onUndo();
+                  effectiveCallback();
                 },
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  child: Text(
+                    actionLabel ?? 'Urungkan',
+                    style: AppTypography.buttonText.copyWith(
+                      color: AppColors.onPrimary,
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
                 ),
-                child: Text(
-                  actionLabel,
-                  style: const TextStyle(
+              ),
+            ] else if (showClose) ...[
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => Get.back(),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(
+                    Icons.close,
+                    size: 18,
                     color: AppColors.onPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    decoration: TextDecoration.underline,
                   ),
                 ),
               ),

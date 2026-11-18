@@ -3,106 +3,210 @@ import '../../data/models/task_model.dart';
 import '../task/task_controller.dart';
 
 class AiController extends GetxController {
-  final TaskController _taskController = Get.find<TaskController>();
+  TaskController get _taskController => Get.isRegistered<TaskController>()
+      ? Get.find<TaskController>()
+      : Get.put(TaskController(), permanent: true);
 
   final RxList<Map<String, dynamic>> messages = <Map<String, dynamic>>[].obs;
   final RxBool isLoading = false.obs;
 
+  List<String> _lastAddedSessionIds = [];
+
   @override
   void onInit() {
     super.onInit();
-    // Default initial greeting if empty
-    if (messages.isEmpty) {
-      messages.add({
-        'isUser': false,
-        'text':
-            'Halo Titut! Saya asisten studi cerdas TaskFlow. Ada yang bisa saya bantu untuk mengorganisir jadwal kuliah, tugas, atau persiapan ujianmu hari ini?',
-        'hasAction': false,
-      });
-    }
+    // Initially empty to present the Layar 18 Empty State ("Mulai Tanya AI")
+  }
+
+  void clearHistory() {
+    messages.clear();
+    _lastAddedSessionIds.clear();
   }
 
   void sendMessage(String text) {
-    if (text.trim().isEmpty) return;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+
+    final now = DateTime.now();
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
+    final timeStr = '$hour:$minute';
 
     messages.add({
       'isUser': true,
-      'text': text,
+      'text': trimmed,
+      'timestamp': timeStr,
       'hasAction': false,
     });
 
     isLoading.value = true;
 
     Future.delayed(const Duration(milliseconds: 600), () {
-      _processAiResponse(text);
+      _processAiResponse(trimmed);
       isLoading.value = false;
     });
   }
 
   void _processAiResponse(String query) {
     final lower = query.toLowerCase();
+    final now = DateTime.now();
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
+    final timeStr = '$hour:$minute';
 
-    if (lower.contains('jadwal') || lower.contains('belajar') || lower.contains('plan')) {
+    if (lower.contains('basis data') ||
+        lower.contains('rencana belajar') ||
+        lower.contains('jadwal belajar intensif')) {
+      messages.add({
+        'isUser': false,
+        'text':
+            'Tentu Titut! Berdasarkan materi normalisasi & indeks pada catatanmu, ini rekomendasi jadwal belajar terstruktur:',
+        'timestamp': timeStr,
+        'hasSchedule': true,
+        'scheduleTitle': 'Rencana Belajar: Basis Data',
+        'scheduleSubtitle': '3 Sesi • Total durasi 3 jam 30 mnt',
+        'scheduleDate': 'Kamis, 26 Okt',
+        'isAdded': false,
+        'sessions': [
+          {
+            'time': '14:00 - 15:30',
+            'title': 'Normalisasi 1NF - BCNF',
+            'note': 'Review relasi fungsional',
+          },
+          {
+            'time': '16:00 - 17:00',
+            'title': 'Latihan Transaksi Distribusi',
+            'note': 'Studi kasus perbankan',
+          },
+          {
+            'time': '19:30 - 20:30',
+            'title': 'Optimasi Query & Audit Indeks',
+            'note': 'Simulasi query EXPLAIN',
+          },
+        ],
+        'followUp':
+            'Apakah kamu ingin menambahkan pengingat alarm 15 menit sebelum setiap sesi dimulai?',
+        'followUpOptions': ['Ya, pasang alarm', 'Tidak perlu'],
+      });
+    } else if (lower.contains('pasang alarm') || lower.contains('ya, pasang')) {
+      messages.add({
+        'isUser': false,
+        'text':
+            '✓ Pengingat alarm 15 menit sebelum setiap sesi dimulai telah berhasil diaktifkan ke notifikasi sistem!',
+        'timestamp': timeStr,
+      });
+    } else if (lower.contains('tidak perlu')) {
+      messages.add({
+        'isUser': false,
+        'text':
+            'Baik Titut, sesi belajar tetap tersimpan di agenda tanpa alarm pengingat tambahan.',
+        'timestamp': timeStr,
+      });
+    } else if (lower.contains('kuliah & tugas') ||
+        lower.contains('jadwal') ||
+        lower.contains('hari ini')) {
       final active = _taskController.activeTasks;
       if (active.isEmpty) {
         messages.add({
           'isUser': false,
           'text':
-              'Hebat! Saat ini tidak ada tugas aktif yang menumpuk. Kamu bisa memanfaatkan waktu untuk membaca materi kuliah berikutnya atau beristirahat.',
-          'hasAction': false,
+              'Hebat! Saat ini tidak ada tugas aktif yang menumpuk hari ini. Kamu bisa memanfaatkan waktu luang untuk membaca materi kuliah atau beristirahat.',
+          'timestamp': timeStr,
         });
       } else {
-        final topTask = active.first;
+        final listStr = active
+            .take(3)
+            .map((t) => '• ${t.title} (${t.timeString}) [${t.priority}]')
+            .join('\n');
         messages.add({
           'isUser': false,
           'text':
-              'Berdasarkan daftar tugasmu, berikut rekomendasi sesi belajar efektif hari ini:\n\n'
-              '• 09:00 - 10:30 WIB: Sesi Fokus "${topTask.title}" (Gunakan teknik Pomodoro 25m fokus, 5m istirahat).\n'
-              '• 13:30 - 15:00 WIB: Review materi & latihan praktikum.\n\n'
-              'Mau saya tambahkan sesi fokus belajar ini langsung ke daftar tugasmu?',
-          'hasAction': true,
-          'actionTitle': 'Sesi Fokus Belajar Mandiri',
-          'actionCategory': 'Kuliah',
-          'actionPriority': '! Tinggi',
+              'Berikut agenda tugas aktifmu untuk hari ini:\n\n$listStr\n\nPastikan untuk menyelesaikan prioritas utama tepat waktu!',
+          'timestamp': timeStr,
         });
       }
-    } else if (lower.contains('prioritas') || lower.contains('tenggat') || lower.contains('deadline')) {
-      final highPriority = _taskController.highPriorityActiveTasks;
-      if (highPriority.isNotEmpty) {
-        final taskNames = highPriority.map((t) => '• ${t.title} (${t.timeString})').join('\n');
-        messages.add({
-          'isUser': false,
-          'text':
-              'Tugas prioritas utama yang harus diselesaikan terlebih dahulu:\n\n$taskNames\n\n'
-              'Fokus selesaikan tugas ini sebelum beralih ke aktivitas lain agar tidak menumpuk mendekati tenggat!',
-          'hasAction': false,
-        });
-      } else {
-        messages.add({
-          'isUser': false,
-          'text':
-              'Saat ini tidak ada tugas berstatus "! Tinggi". Kamu berada di jalur yang aman!',
-          'hasAction': false,
-        });
-      }
-    } else if (lower.contains('responsi') || lower.contains('pam') || lower.contains('ujian')) {
+    } else if (lower.contains('rangkum') || lower.contains('catatan')) {
       messages.add({
         'isUser': false,
         'text':
-            'Tips Sukses Praktikum Pemrograman Mobile (PAM):\n\n'
-            '1. Kuasai arsitektur GetX (Controller, Rx, Obx, Binding).\n'
-            '2. Pahami penyimpanan lokal Hive Box & SharedPreferences.\n'
-            '3. Pastikan exception handling dan validasi form selalu diterapkan.\n'
-            '4. Jaga kode tetap modular dan pisahkan widget agar mudah di-debug.',
-        'hasAction': false,
+            'Berikut rangkuman inti catatan kuliah terakhirmu mengenai Arsitektur Mobile & GetX State Management:\n\n'
+            '1. Pemisahan Layer: GetX memisahkan UI (View), Business Logic (Controller), dan Dependency Injection (Binding).\n'
+            '2. Reaktivitas: Menggunakan tipe .obs dan widget Obx() untuk render ulang presisi tanpa setState.\n'
+            '3. Persistensi: Integrasi Hive Box & SharedPreferences menyimpan data aman secara offline.\n'
+            '4. Navigation: Navigasi deklaratif Get.toNamed() mempermudah routing antar-halaman.',
+        'timestamp': timeStr,
       });
+    } else if (lower.contains('prioritas') || lower.contains('menumpuk')) {
+      final highPriority = _taskController.highPriorityActiveTasks;
+      if (highPriority.isNotEmpty) {
+        final taskNames =
+            highPriority.map((t) => '• ${t.title} (${t.timeString})').join('\n');
+        messages.add({
+          'isUser': false,
+          'text':
+              'Tugas prioritas utama yang harus kamu selesaikan terlebih dahulu:\n\n$taskNames\n\n'
+              'Fokus selesaikan tugas-tugas di atas sebelum tenggat waktu mendekat!',
+          'timestamp': timeStr,
+        });
+      } else {
+        messages.add({
+          'isUser': false,
+          'text':
+              'Saat ini semua tugas prioritas tinggi telah terselesaikan. Kamu berada di jalur yang sangat aman!',
+          'timestamp': timeStr,
+        });
+      }
     } else {
       messages.add({
         'isUser': false,
         'text':
-            'Saya siap membantu! Kamu bisa meminta saya membuatkan jadwal belajar harian, menyaring prioritas tugas, atau memberikan checklist persiapan responsi.',
-        'hasAction': false,
+            'Saya siap membantu! Kamu bisa meminta saya menyusun jadwal belajar intensif, merangkum materi catatan kuliah, atau menyaring prioritas tugas harian.',
+        'timestamp': timeStr,
       });
+    }
+  }
+
+  void addScheduleSessionsToTasks(int messageIndex) {
+    if (messageIndex >= messages.length) return;
+    final msg = messages[messageIndex];
+    final sessions = msg['sessions'] is List ? (msg['sessions'] as List) : null;
+    if (sessions == null) return;
+
+    _lastAddedSessionIds.clear();
+    final now = DateTime.now();
+
+    for (int i = 0; i < sessions.length; i++) {
+      final s = sessions[i];
+      final id = 'task_ai_session_${now.millisecondsSinceEpoch}_$i';
+      _lastAddedSessionIds.add(id);
+
+      _taskController.addTask(TaskModel(
+        id: id,
+        title: s['title'] ?? 'Sesi Belajar',
+        dateTime: now.add(Duration(hours: (i + 1) * 2)),
+        timeString: s['time'] ?? '14:00 WIB',
+        location: 'Meja Belajar / Lab',
+        category: 'Kuliah',
+        priority: '! Tinggi',
+        note: s['note'] ?? 'Dibuat otomatis melalui Tanya AI',
+      ));
+    }
+
+    final updated = Map<String, dynamic>.from(msg);
+    updated['isAdded'] = true;
+    messages[messageIndex] = updated;
+  }
+
+  void undoAddScheduleSessions(int messageIndex) {
+    for (final id in _lastAddedSessionIds) {
+      _taskController.deleteTask(id);
+    }
+    _lastAddedSessionIds.clear();
+
+    if (messageIndex < messages.length) {
+      final updated = Map<String, dynamic>.from(messages[messageIndex]);
+      updated['isAdded'] = false;
+      messages[messageIndex] = updated;
     }
   }
 
@@ -124,8 +228,9 @@ class AiController extends GetxController {
     messages.add({
       'isUser': false,
       'text': '✓ Sesi fokus berhasil ditambahkan ke daftar tugas Home!',
+      'timestamp':
+          '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
       'hasAction': false,
     });
   }
 }
-

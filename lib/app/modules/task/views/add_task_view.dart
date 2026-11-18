@@ -3,7 +3,14 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/app_shadows.dart';
+import '../../../core/theme/app_typography.dart';
 import '../../../data/models/task_model.dart';
+import '../../../global_widgets/app_form_field.dart';
+import '../../../global_widgets/form_top_bar.dart';
+import '../../../global_widgets/segmented_selector.dart';
+import '../../../global_widgets/sticky_action_bar.dart';
+import '../../../global_widgets/toggle_row.dart';
 import '../task_controller.dart';
 
 class AddTaskView extends StatefulWidget {
@@ -14,7 +21,7 @@ class AddTaskView extends StatefulWidget {
 }
 
 class _AddTaskViewState extends State<AddTaskView> {
-  final TaskController controller = Get.find<TaskController>();
+  late final TaskController controller;
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
@@ -26,8 +33,23 @@ class _AddTaskViewState extends State<AddTaskView> {
   String selectedCategory = 'Kuliah';
   String selectedPriority = '= Sedang';
 
-  final List<String> categories = ['Kuliah', 'Pekerjaan', 'Pribadi', 'Kesehatan'];
+  // Toggle states
+  bool remind1Day = false;
+  bool remind12Hours = false;
+  bool remind6Hours = false;
+  bool remind3Hours = true; // default on in spec
+  bool remind1Hour = false;
+
+  final List<String> categories = ['Kuliah', 'Pekerjaan', 'Pribadi', 'Lainnya'];
   final List<String> priorities = ['— Rendah', '= Sedang', '! Tinggi'];
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.isRegistered<TaskController>()
+        ? Get.find<TaskController>()
+        : Get.put(TaskController(), permanent: true);
+  }
 
   @override
   void dispose() {
@@ -44,8 +66,8 @@ class _AddTaskViewState extends State<AddTaskView> {
         'Perhatian',
         'Judul tugas wajib diisi!',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: AppColors.error,
-        colorText: AppColors.onError,
+        backgroundColor: AppColors.primary,
+        colorText: AppColors.onPrimary,
       );
       return;
     }
@@ -79,307 +101,222 @@ class _AddTaskViewState extends State<AddTaskView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Center(
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                shape: BoxShape.circle,
-                boxShadow: const [AppColors.cardShadow],
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, size: 20, color: AppColors.primary),
-                onPressed: () => Get.back(),
-              ),
-            ),
-          ),
-        ),
-        title: const Text(
-          'Tambah Tugas',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-        ),
-      ),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
+            // Standard FormTopBar (64px, arrow_back, modal-title)
+            const FormTopBar(title: 'Tambah Tugas'),
+
+            // Scrollable Form Fields
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(AppDimens.margin),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimens.margin,
+                  vertical: 16,
+                ),
                 children: [
-                  // 1. Judul Tugas
-                  _buildLabel('JUDUL TUGAS *'),
-                  _buildTextInput(
+                  // 1. Judul Tugas *
+                  AppFormField(
+                    label: 'Judul Tugas',
+                    isRequired: true,
+                    placeholder: 'Masukkan judul tugas...',
                     controller: titleController,
-                    hint: 'Contoh: Analisis Kebutuhan Sistem PAM',
-                    icon: Icons.title_rounded,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  // 2. Tanggal & Waktu
-                  _buildLabel('WAKTU & TENGGAT'),
+                  // 2. Kategori *
+                  SegmentedSelector(
+                    label: 'Kategori *',
+                    options: categories,
+                    selectedOption: selectedCategory,
+                    columns: 2,
+                    onSelected: (cat) => setState(() => selectedCategory = cat),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 3. Prioritas *
+                  SegmentedSelector(
+                    label: 'Prioritas *',
+                    options: priorities,
+                    selectedOption: selectedPriority,
+                    columns: 3,
+                    onSelected: (p) => setState(() => selectedPriority = p),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 4. Tanggal & Waktu (2 Columns)
                   Row(
                     children: [
-                      // Date Selector
                       Expanded(
-                        child: InkWell(
-                          onTap: _pickDate,
-                          borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                          child: Container(
-                            height: 52,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                              boxShadow: const [AppColors.cardShadow],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                'TANGGAL *',
+                                style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
+                              ),
                             ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.calendar_today_rounded, size: 18, color: AppColors.secondary),
-                                const SizedBox(width: 10),
-                                Text(
-                                  DateFormat('d MMM yyyy').format(selectedDate),
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                            GestureDetector(
+                              onTap: _pickDate,
+                              child: Container(
+                                height: 52,
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(AppDimens.radiusInput),
+                                  boxShadow: const [AppShadows.field],
                                 ),
-                              ],
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.secondary),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      DateFormat('dd/MM/yyyy').format(selectedDate),
+                                      style: AppTypography.bodyDefault.copyWith(fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      // Time Selector
+                      const SizedBox(width: AppDimens.gutter),
                       Expanded(
-                        child: InkWell(
-                          onTap: _pickTime,
-                          borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                          child: Container(
-                            height: 52,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                              boxShadow: const [AppColors.cardShadow],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Text(
+                                'WAKTU *',
+                                style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
+                              ),
                             ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.access_time_rounded, size: 18, color: AppColors.secondary),
-                                const SizedBox(width: 10),
-                                Text(
-                                  selectedTime.format(context),
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                            GestureDetector(
+                              onTap: _pickTime,
+                              child: Container(
+                                height: 52,
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(AppDimens.radiusInput),
+                                  boxShadow: const [AppShadows.field],
                                 ),
-                              ],
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.schedule_outlined, size: 18, color: AppColors.secondary),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')} WIB',
+                                      style: AppTypography.bodyDefault.copyWith(fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  // 3. Lokasi
-                  _buildLabel('LOKASI / RUANGAN'),
-                  _buildTextInput(
+                  // 5. Lokasi
+                  AppFormField(
+                    label: 'Lokasi',
+                    placeholder: 'Nama gedung, ruangan, atau link meet...',
+                    prefixIcon: Icons.location_on_outlined,
                     controller: locationController,
-                    hint: 'Contoh: Lab Komputer 3 / Online Zoom',
-                    icon: Icons.location_on_outlined,
+                    linkText: 'Gunakan lokasi saat ini',
+                    linkIcon: Icons.near_me_outlined,
+                    onLinkTap: () {
+                      locationController.text = 'Gedung Kuliah Bersama, R. 302';
+                    },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  // 4. Kategori Segmented Selector
-                  _buildLabel('KATEGORI'),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: categories.map((cat) {
-                      final isSelected = selectedCategory == cat;
-                      return ChoiceChip(
-                        label: Text(cat),
-                        selected: isSelected,
-                        selectedColor: AppColors.primary,
-                        backgroundColor: AppColors.fill1,
-                        labelStyle: TextStyle(
-                          color: isSelected ? AppColors.onPrimary : AppColors.secondary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                          side: BorderSide.none,
-                        ),
-                        showCheckmark: false,
-                        onSelected: (_) => setState(() => selectedCategory = cat),
-                      );
-                    }).toList(),
+                  // 6. Pengingat (Card 24px with ToggleRows)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'PENGINGAT',
+                      style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-
-                  // 5. Prioritas Segmented Selector
-                  _buildLabel('TINGKAT PRIORITAS'),
-                  Row(
-                    children: priorities.map((prio) {
-                      final isSelected = selectedPriority == prio;
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: InkWell(
-                            onTap: () => setState(() => selectedPriority = prio),
-                            borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                            child: Container(
-                              height: 42,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: isSelected ? AppColors.primary : AppColors.fill1,
-                                borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                              ),
-                              child: Text(
-                                prio,
-                                style: TextStyle(
-                                  color: isSelected ? AppColors.onPrimary : AppColors.secondary,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // 6. Catatan Tambahan
-                  _buildLabel('CATATAN TAMBAHAN (OPSIONAL)'),
                   Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                      boxShadow: const [AppColors.cardShadow],
+                      borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+                      boxShadow: const [AppShadows.standard],
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: TextField(
-                      controller: noteController,
-                      maxLines: 4,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                      decoration: const InputDecoration(
-                        hintText: 'Tuliskan detail atau instruksi tugas...',
-                        hintStyle: TextStyle(color: AppColors.tertiary, fontSize: 13),
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
-                      ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      children: [
+                        ToggleRow(
+                          label: '1 hari sebelum',
+                          icon: Icons.notifications_none_rounded,
+                          value: remind1Day,
+                          onChanged: (v) => setState(() => remind1Day = v),
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        ToggleRow(
+                          label: '12 jam sebelum',
+                          icon: Icons.notifications_none_rounded,
+                          value: remind12Hours,
+                          onChanged: (v) => setState(() => remind12Hours = v),
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        ToggleRow(
+                          label: '6 jam sebelum',
+                          icon: Icons.notifications_none_rounded,
+                          value: remind6Hours,
+                          onChanged: (v) => setState(() => remind6Hours = v),
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        ToggleRow(
+                          label: '3 jam sebelum',
+                          icon: Icons.notifications_none_rounded,
+                          value: remind3Hours,
+                          onChanged: (v) => setState(() => remind3Hours = v),
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        ToggleRow(
+                          label: '1 jam sebelum',
+                          icon: Icons.notifications_none_rounded,
+                          value: remind1Hour,
+                          onChanged: (v) => setState(() => remind1Hour = v),
+                        ),
+                      ],
                     ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 7. Catatan (Textarea min 110px)
+                  AppFormField(
+                    label: 'Catatan Tambahan',
+                    placeholder: 'Tambahkan instruksi, referensi, atau detail tugas...',
+                    controller: noteController,
+                    maxLines: 4,
                   ),
                   const SizedBox(height: 24),
                 ],
               ),
             ),
 
-            // Sticky Bottom Actions
-            Container(
-              padding: const EdgeInsets.all(AppDimens.margin),
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Color.fromRGBO(0, 0, 0, 0.05),
-                    blurRadius: 16,
-                    offset: Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: _saveTask,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.onPrimary,
-                      elevation: 0,
-                      minimumSize: const Size(double.infinity, 52),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                      ),
-                    ),
-                    child: const Text(
-                      'Simpan Tugas',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () => Get.back(),
-                    style: TextButton.styleFrom(
-                      backgroundColor: AppColors.fill1,
-                      foregroundColor: AppColors.secondary,
-                      minimumSize: const Size(double.infinity, 52),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                      ),
-                    ),
-                    child: const Text(
-                      'Batal',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ],
-              ),
+            // Standard StickyActionBar (52px black over fill-1 Batal)
+            StickyActionBar(
+              primaryText: 'Simpan Tugas',
+              onPrimaryPressed: _saveTask,
+              secondaryText: 'Batal',
+              onSecondaryPressed: () => Get.back(),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8, left: 2),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          color: AppColors.secondary,
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextInput({
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-  }) {
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-        boxShadow: const [AppColors.cardShadow],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.secondary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: const TextStyle(color: AppColors.tertiary, fontSize: 13),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -432,4 +369,3 @@ class _AddTaskViewState extends State<AddTaskView> {
     }
   }
 }
-

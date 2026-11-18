@@ -94,7 +94,7 @@ class StatGrid extends GetView<TaskController> {
                 child: CustomPaint(
                   size: const Size(44, 14),
                   painter: SineWavePainter(
-                    color: const Color(0x590A0A0A),
+                    color: AppColors.primary.withOpacity(0.35),
                     strokeWidth: 2.0,
                   ),
                 ),

@@ -10,13 +10,13 @@ import 'main_nav_controller.dart';
 class MainNavBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<MainNavController>(() => MainNavController());
-    Get.lazyPut<TaskController>(() => TaskController());
-    Get.lazyPut<AttendanceController>(() => AttendanceController());
-    Get.lazyPut<NoteController>(() => NoteController());
-    Get.lazyPut<ProfileController>(() => ProfileController());
-    Get.lazyPut<AiController>(() => AiController());
-    Get.lazyPut<NotificationController>(() => NotificationController());
+    Get.lazyPut<MainNavController>(() => MainNavController(), fenix: true);
+    Get.lazyPut<TaskController>(() => TaskController(), fenix: true);
+    Get.lazyPut<AttendanceController>(() => AttendanceController(), fenix: true);
+    Get.lazyPut<NoteController>(() => NoteController(), fenix: true);
+    Get.lazyPut<ProfileController>(() => ProfileController(), fenix: true);
+    Get.lazyPut<AiController>(() => AiController(), fenix: true);
+    Get.lazyPut<NotificationController>(() => NotificationController(), fenix: true);
   }
 }
 

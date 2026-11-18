@@ -88,8 +88,12 @@ class AttendanceModel {
       time: map['time']?.toString() ?? '',
       room: map['room']?.toString() ?? '',
       reminderActive: map['reminderActive'] != false,
-      attendedMeetings: map['attendedMeetings'] is int ? map['attendedMeetings'] : 0,
-      totalMeetings: map['totalMeetings'] is int ? map['totalMeetings'] : 14,
+      attendedMeetings: map['attendedMeetings'] is int
+          ? map['attendedMeetings']
+          : (int.tryParse(map['attendedMeetings']?.toString() ?? '0') ?? 0),
+      totalMeetings: map['totalMeetings'] is int
+          ? map['totalMeetings']
+          : (int.tryParse(map['totalMeetings']?.toString() ?? '14') ?? 14),
     );
   }
 }
@@ -105,15 +109,19 @@ class AttendanceModelAdapter extends TypeAdapter<AttendanceModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return AttendanceModel(
-      id: fields[0] as String,
-      subjectName: fields[1] as String,
-      type: fields[2] as String,
-      day: fields[3] as String,
-      time: fields[4] as String,
-      room: fields[5] as String,
-      reminderActive: fields[6] as bool,
-      attendedMeetings: fields[7] as int,
-      totalMeetings: fields[8] as int,
+      id: fields[0]?.toString() ?? '',
+      subjectName: fields[1]?.toString() ?? '',
+      type: fields[2]?.toString() ?? 'Teori',
+      day: fields[3]?.toString() ?? 'Senin',
+      time: fields[4]?.toString() ?? '',
+      room: fields[5]?.toString() ?? '',
+      reminderActive: fields[6] != false,
+      attendedMeetings: fields[7] is int
+          ? fields[7] as int
+          : (int.tryParse(fields[7]?.toString() ?? '0') ?? 0),
+      totalMeetings: fields[8] is int
+          ? fields[8] as int
+          : (int.tryParse(fields[8]?.toString() ?? '14') ?? 14),
     );
   }
 

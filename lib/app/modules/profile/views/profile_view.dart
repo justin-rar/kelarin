@@ -1,312 +1,359 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/app_shadows.dart';
+import '../../../core/theme/app_typography.dart';
+import '../../../global_widgets/confirmation_dialog.dart';
+import '../../../global_widgets/form_top_bar.dart';
+import '../../../global_widgets/settings_group.dart';
+import '../../../global_widgets/stat_tile.dart';
+import '../../../global_widgets/toggle_row.dart';
 import '../../../routes/app_routes.dart';
 import '../profile_controller.dart';
 
-class ProfileView extends GetView<ProfileController> {
+/// Profil Mahasiswa screen matching Layar 21 (21_profil.html):
+/// - FormTopBar(title: 'Profil')
+/// - Centered 96x96 Avatar with 32x32 camera badge
+/// - Name, email + semester subtitle, and Edit Profil pill button
+/// - 2 Stat Tiles (Tugas Selesai in stat-light, Tugas Aktif in stat-dark) with SineWavePainter
+/// - KEAMANAN group (Kunci Aplikasi PIN toggle, Ubah PIN row, Notifikasi toggle)
+/// - DATA group (Bersihkan Tugas Selesai row, Tentang TaskFlow row)
+/// - Full-width "Keluar dari Akun" pill button
+class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    if (!Get.isRegistered<ProfileController>()) {
-      Get.put(ProfileController());
-    }
+  State<ProfileView> createState() => _ProfileViewState();
+}
 
+class _ProfileViewState extends State<ProfileView> {
+  late final ProfileController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!Get.isRegistered<ProfileController>()) {
+      controller = Get.put(ProfileController());
+    } else {
+      controller = Get.find<ProfileController>();
+    }
+  }
+
+  void _showLogoutDialog() {
+    ConfirmationDialog.show(
+      title: 'Keluar dari Akun',
+      message: 'Apakah kamu yakin ingin keluar dari akun ini di perangkat ini?',
+      icon: Icons.logout_rounded,
+      confirmText: 'Keluar',
+      cancelText: 'Batal',
+      onConfirm: () {
+        Get.back();
+        Get.rawSnackbar(
+          message: 'Sesi akun berhasil diakhiri',
+          snackPosition: SnackPosition.TOP,
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Center(
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                shape: BoxShape.circle,
-                boxShadow: const [AppColors.cardShadow],
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, size: 20, color: AppColors.primary),
-                onPressed: () => Get.back(),
-              ),
-            ),
-          ),
-        ),
-        title: const Text(
-          'Profil Mahasiswa',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-        ),
-      ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(AppDimens.margin),
+        child: Column(
           children: [
-            // User Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppDimens.radiusCard),
-                boxShadow: const [AppColors.cardShadow],
-              ),
-              child: Column(
-                children: [
-                  Obx(() {
-                    final initial = controller.name.value.isNotEmpty
-                        ? controller.name.value[0].toUpperCase()
-                        : 'T';
-                    return Container(
-                      width: 72,
-                      height: 72,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          initial,
-                          style: const TextStyle(
-                            color: AppColors.onPrimary,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 14),
-
-                  Obx(() => Text(
-                    controller.name.value,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                  )),
-                  const SizedBox(height: 4),
-
-                  Obx(() => Text(
-                    '${controller.nim.value} • ${controller.major.value}',
-                    style: const TextStyle(fontSize: 13, color: AppColors.secondary, fontWeight: FontWeight.w600),
-                  )),
-                  const SizedBox(height: 4),
-
-                  Obx(() => Text(
-                    controller.email.value,
-                    style: const TextStyle(fontSize: 12, color: AppColors.tertiary),
-                  )),
-                  const SizedBox(height: 16),
-
-                  // Semester Pill
-                  Obx(() => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.fill1,
-                      borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                    ),
-                    child: Text(
-                      controller.semester.value,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  )),
-                ],
-              ),
+            // Fixed Top Bar (64px, back button + centered "Profil" + spacer)
+            FormTopBar(
+              title: 'Profil',
+              onBack: () => Get.back(),
             ),
-            const SizedBox(height: 16),
 
-            // Stat Counter Row
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.statLight,
-                      borderRadius: BorderRadius.circular(AppDimens.radiusCard),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            // Scrollable Content
+            Expanded(
+              child: Obx(() {
+                final initial = controller.name.value.isNotEmpty
+                    ? controller.name.value[0].toUpperCase()
+                    : 'T';
+                final emailText = controller.email.value.isNotEmpty
+                    ? controller.email.value
+                    : 'titut.student@taskflow.id';
+                final semesterText = controller.semester.value.isNotEmpty
+                    ? controller.semester.value
+                    : 'Semester 5';
+
+                return ListView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimens.margin,
+                    vertical: 8,
+                  ),
+                  children: [
+                    // Area Profil Utama (Avatar + Camera + Name + Subtext + Edit Button)
+                    Column(
                       children: [
+                        // Big 96x96 Avatar with Camera Badge
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            GestureDetector(
+                              onTap: () => controller.showAvatarPickerSheet(context),
+                              child: Obx(() {
+                                final imagePath = controller.profileImagePath.value;
+                                final hasImage = imagePath != null &&
+                                    imagePath.isNotEmpty &&
+                                    File(imagePath).existsSync();
+
+                                return Container(
+                                  width: 96,
+                                  height: 96,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.primary,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [AppShadows.standard],
+                                  ),
+                                  child: hasImage
+                                      ? ClipOval(
+                                          child: Image.file(
+                                            File(imagePath),
+                                            width: 96,
+                                            height: 96,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        )
+                                      : Center(
+                                          child: Text(
+                                            initial,
+                                            style: AppTypography.headlineH1.copyWith(
+                                              fontSize: 40,
+                                              fontWeight: FontWeight.w800,
+                                              color: AppColors.onPrimary,
+                                              height: 1.0,
+                                            ),
+                                          ),
+                                        ),
+                                );
+                              }),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: () => controller.showAvatarPickerSheet(context),
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.surface,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Color(0x14000000),
+                                        blurRadius: 12,
+                                        offset: Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.photo_camera,
+                                      size: 16,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // User Name
                         Text(
-                          '${controller.completedTasksCount}',
-                          style: const TextStyle(
-                            fontSize: 28,
+                          controller.name.value.isNotEmpty
+                              ? controller.name.value
+                              : 'Titut',
+                          style: AppTypography.headlineH1.copyWith(
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: AppColors.primary,
                           ),
                         ),
+
                         const SizedBox(height: 4),
-                        const Text(
-                          'Tugas Selesai',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.secondary),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppDimens.gutter),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.statDark,
-                      borderRadius: BorderRadius.circular(AppDimens.radiusCard),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+
+                        // Subtext: email • semester
                         Text(
-                          '${controller.activeTasksCount}',
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primary,
+                          '$emailText • $semesterText',
+                          style: AppTypography.captionMeta.copyWith(
+                            fontSize: 13,
+                            color: AppColors.secondary,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Tugas Aktif',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.secondary),
+
+                        const SizedBox(height: 16),
+
+                        // Edit Profil Pill Button
+                        GestureDetector(
+                          onTap: () => Get.toNamed(AppRoutes.profileEdit),
+                          child: Container(
+                            height: 36,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            decoration: BoxDecoration(
+                              color: AppColors.fill1,
+                              borderRadius: BorderRadius.circular(AppDimens.radiusFull),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.edit,
+                                  size: 16,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Edit Profil',
+                                  style: AppTypography.buttonText.copyWith(
+                                    fontSize: 13,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
 
-            // Settings Menu List
-            _buildSectionHeader('PENGATURAN AKUN & SISTEM'),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppDimens.radiusCard),
-                boxShadow: const [AppColors.cardShadow],
-              ),
-              child: Column(
-                children: [
-                  _buildMenuItem(
-                    icon: Icons.person_outline_rounded,
-                    title: 'Edit Data Profil',
-                    subtitle: 'Ubah nama, NIM, email, dan jurusan',
-                    onTap: () => Get.toNamed(AppRoutes.profileEdit),
-                  ),
-                  const Divider(indent: 56),
+                    const SizedBox(height: 24),
 
-                  Obx(() => SwitchListTile(
-                    secondary: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        color: AppColors.fill1,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.primary),
+                    // Two Stat Cards with Wave Decoration
+                    Row(
+                      children: [
+                        Expanded(
+                          child: StatTile(
+                            value: '${controller.completedTasksCount}',
+                            label: 'Tugas Selesai',
+                            backgroundColor: AppColors.statLight,
+                            variant: StatTileVariant.profile,
+                          ),
+                        ),
+                        const SizedBox(width: AppDimens.gutter),
+                        Expanded(
+                          child: StatTile(
+                            value: '${controller.activeTasksCount}',
+                            label: 'Tugas Aktif',
+                            backgroundColor: AppColors.statDark,
+                            variant: StatTileVariant.profile,
+                          ),
+                        ),
+                      ],
                     ),
-                    title: const Text('Kunci Aplikasi PIN', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                    subtitle: const Text('Amankan akses saat aplikasi dibuka', style: TextStyle(fontSize: 12, color: AppColors.secondary)),
-                    value: controller.isPinEnabled.value,
-                    activeThumbColor: AppColors.primary,
-                    onChanged: (val) => controller.togglePinEnabled(val),
-                  )),
-                  const Divider(indent: 56),
 
-                  _buildMenuItem(
-                    icon: Icons.pin_outlined,
-                    title: 'Ubah Kode PIN',
-                    subtitle: 'Perbarui 4-digit PIN keamanan',
-                    onTap: controller.changePin,
-                  ),
-                  const Divider(indent: 56),
+                    const SizedBox(height: 24),
 
-                  _buildMenuItem(
-                    icon: Icons.info_outline_rounded,
-                    title: 'Tentang TaskFlow',
-                    subtitle: 'Informasi versi dan tim pengembang',
-                    onTap: () => Get.toNamed(AppRoutes.profileAbout),
-                  ),
-                  const Divider(indent: 56),
+                    // Settings Group 1: KEAMANAN
+                    SettingsGroup(
+                      title: 'KEAMANAN',
+                      items: [
+                        SettingsRowItem(
+                          icon: Icons.lock,
+                          title: 'Kunci Aplikasi PIN',
+                          subtitle: 'Amankan data tugas & catatan',
+                          trailing: AppSwitch(
+                            value: controller.isPinEnabled.value,
+                            onChanged: controller.togglePinEnabled,
+                          ),
+                        ),
+                        SettingsRowItem(
+                          icon: Icons.pin,
+                          title: 'Ubah PIN',
+                          subtitle: 'Terakhir diubah 30 hari lalu',
+                          onTap: controller.changePin,
+                        ),
+                        SettingsRowItem(
+                          icon: Icons.notifications,
+                          title: 'Notifikasi & Pengingat',
+                          subtitle: 'Pemberitahuan jadwal & deadline',
+                          trailing: AppSwitch(
+                            value: controller.isNotificationsEnabled.value,
+                            onChanged: controller.toggleNotificationsEnabled,
+                          ),
+                        ),
+                      ],
+                    ),
 
-                  _buildMenuItem(
-                    icon: Icons.cleaning_services_outlined,
-                    title: 'Bersihkan Seluruh Data',
-                    subtitle: 'Hapus data tugas, presensi, dan catatan',
-                    iconColor: AppColors.error,
-                    textColor: AppColors.error,
-                    onTap: () => _confirmReset(context),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 24),
+
+                    // Settings Group 2: DATA
+                    SettingsGroup(
+                      title: 'DATA',
+                      items: [
+                        SettingsRowItem(
+                          icon: Icons.cleaning_services,
+                          title: 'Bersihkan Tugas Selesai',
+                          subtitle: 'Arsipkan atau hapus rekap tugas lama',
+                          onTap: controller.clearCompletedTasks,
+                        ),
+                        SettingsRowItem(
+                          icon: Icons.info,
+                          title: 'Tentang TaskFlow',
+                          subtitle: 'Versi 1.0.0 (Build 240)',
+                          onTap: () => Get.toNamed(AppRoutes.profileAbout),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Bottom Action: Keluar dari Akun
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _showLogoutDialog,
+                        borderRadius: BorderRadius.circular(AppDimens.radiusFab),
+                        child: Container(
+                          height: 48,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.fill1,
+                            borderRadius: BorderRadius.circular(AppDimens.radiusFab),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.logout,
+                                size: 18,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Keluar dari Akun',
+                                style: AppTypography.buttonText.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+                  ],
+                );
+              }),
             ),
-            const SizedBox(height: 24),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          color: AppColors.secondary,
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-    Color iconColor = AppColors.primary,
-    Color textColor = AppColors.primary,
-  }) {
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        width: 36,
-        height: 36,
-        decoration: const BoxDecoration(
-          color: AppColors.fill1,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, size: 18, color: iconColor),
-      ),
-      title: Text(title, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: textColor)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.secondary)),
-      trailing: const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.tertiary),
-    );
-  }
-
-  void _confirmReset(BuildContext context) {
-    Get.defaultDialog(
-      title: 'Bersihkan Semua Data?',
-      titleStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-      middleText: 'Seluruh data tugas, presensi, catatan, dan notifikasi akan dihapus secara permanen.',
-      middleTextStyle: const TextStyle(fontSize: 13, color: AppColors.secondary),
-      radius: 20,
-      backgroundColor: AppColors.surface,
-      textConfirm: 'Hapus Bersih',
-      confirmTextColor: AppColors.onPrimary,
-      buttonColor: AppColors.error,
-      textCancel: 'Batal',
-      cancelTextColor: AppColors.primary,
-      onConfirm: () {
-        controller.clearAllData();
-        Get.back();
-      },
     );
   }
 }

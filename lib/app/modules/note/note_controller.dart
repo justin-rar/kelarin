@@ -8,6 +8,7 @@ class NoteController extends GetxController {
 
   final RxList<NoteModel> notes = <NoteModel>[].obs;
   final RxString searchQuery = ''.obs;
+  final RxString selectedCategory = 'Semua'.obs;
 
   @override
   void onInit() {
@@ -20,16 +21,63 @@ class NoteController extends GetxController {
   }
 
   List<NoteModel> get filteredNotes {
-    if (searchQuery.value.trim().isEmpty) return notes;
-    final q = searchQuery.value.trim().toLowerCase();
-    return notes.where((n) =>
-        n.title.toLowerCase().contains(q) ||
-        n.content.toLowerCase().contains(q) ||
-        n.category.toLowerCase().contains(q)).toList();
+    return notes.where((n) {
+      if (searchQuery.value.trim().isNotEmpty) {
+        final q = searchQuery.value.trim().toLowerCase();
+        final matchTitle = n.title.toLowerCase().contains(q);
+        final matchContent = n.content.toLowerCase().contains(q);
+        if (!matchTitle && !matchContent) return false;
+      }
+      return true;
+    }).toList();
   }
 
   List<NoteModel> get pinnedNotes => filteredNotes.where((n) => n.isPinned).toList();
   List<NoteModel> get otherNotes => filteredNotes.where((n) => !n.isPinned).toList();
+
+  List<NoteModel> get todayNotes {
+    final now = DateTime.now();
+    return filteredNotes.where((n) {
+      return n.isPinned ||
+          (n.updatedAt.year == now.year &&
+              n.updatedAt.month == now.month &&
+              n.updatedAt.day == now.day);
+    }).toList();
+  }
+
+  List<NoteModel> get past7DaysNotes {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final sevenDaysAgo = today.subtract(const Duration(days: 7));
+    return filteredNotes.where((n) {
+      if (n.isPinned) return false;
+      final d = DateTime(n.updatedAt.year, n.updatedAt.month, n.updatedAt.day);
+      return d.isBefore(today) && (d.isAfter(sevenDaysAgo) || d.isAtSameMomentAs(sevenDaysAgo));
+    }).toList();
+  }
+
+  List<NoteModel> get past30DaysNotes {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final sevenDaysAgo = today.subtract(const Duration(days: 7));
+    final thirtyDaysAgo = today.subtract(const Duration(days: 30));
+    return filteredNotes.where((n) {
+      if (n.isPinned) return false;
+      final d = DateTime(n.updatedAt.year, n.updatedAt.month, n.updatedAt.day);
+      return d.isBefore(sevenDaysAgo) && (d.isAfter(thirtyDaysAgo) || d.isAtSameMomentAs(thirtyDaysAgo));
+    }).toList();
+  }
+
+  List<NoteModel> get olderNotes {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final thirtyDaysAgo = today.subtract(const Duration(days: 30));
+    return filteredNotes.where((n) {
+      if (n.isPinned) return false;
+      final d = DateTime(n.updatedAt.year, n.updatedAt.month, n.updatedAt.day);
+      return d.isBefore(thirtyDaysAgo);
+    }).toList();
+  }
 
   Future<void> addNote(NoteModel model) async {
     await _storage.noteBox.put(model.id, model);

@@ -3,8 +3,10 @@ import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../global_widgets/app_header.dart';
+import '../../../global_widgets/app_search_bar.dart';
 import '../../../global_widgets/empty_state.dart';
 import '../../../global_widgets/page_title_row.dart';
+import '../../../global_widgets/section_label.dart';
 import '../../../routes/app_routes.dart';
 import '../../ai/views/tanya_ai_bottom_sheet.dart';
 import '../note_controller.dart';
@@ -21,6 +23,7 @@ class NoteView extends GetView<NoteController> {
         bottom: false,
         child: Column(
           children: [
+            // Fixed AppHeader (56px, blur + background/90)
             AppHeader(
               onAiTap: () => TanyaAiBottomSheet.show(context),
             ),
@@ -33,112 +36,110 @@ class NoteView extends GetView<NoteController> {
                 child: ListView(
                   padding: const EdgeInsets.only(bottom: 120),
                   children: [
-                    PageTitleRow(
-                      title: 'Catatan',
-                      filterText: '+ Baru',
-                      onFilterTap: () => Get.toNamed(AppRoutes.noteAdd),
+                    // 1. Page Title Row: "Semua Catatan" (filter dihapus)
+                    const PageTitleRow(title: 'Semua Catatan'),
+                    const SizedBox(height: 16),
+
+                    // 2. Search Bar: "Cari catatan, tag, atau ide..."
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppDimens.margin),
+                      child: AppSearchBar(
+                        placeholder: 'Cari catatan, tag, atau ide...',
+                        onChanged: (val) => controller.searchQuery.value = val,
+                        onClear: () => controller.searchQuery.value = '',
+                      ),
                     ),
                     const SizedBox(height: 16),
 
-                    // Search Bar for notes
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppDimens.margin),
-                      child: Container(
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                          boxShadow: const [AppColors.cardShadow],
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.search_rounded, size: 20, color: AppColors.tertiary),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: TextField(
-                                onChanged: (val) => controller.searchQuery.value = val,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                                decoration: const InputDecoration(
-                                  hintText: 'Cari dalam catatan...',
-                                  hintStyle: TextStyle(color: AppColors.tertiary, fontSize: 13),
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.zero,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Notes Content
+                    // 3. Notes Content or Empty State
                     Obx(() {
-                      final pinned = controller.pinnedNotes;
-                      final other = controller.otherNotes;
+                      final allNotes = controller.notes;
+                      final filtered = controller.filteredNotes;
 
-                      if (pinned.isEmpty && other.isEmpty) {
+                      if (allNotes.isEmpty) {
                         return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimens.margin,
-                            vertical: 24,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: AppDimens.margin),
                           child: EmptyStateCard(
-                            icon: Icons.edit_note_rounded,
+                            icon: Icons.description_outlined,
                             title: 'Belum Ada Catatan',
                             subtitle:
-                                'Tulis rangkuman materi kuliah, draft tugas, atau ide penting Anda di sini.',
-                            buttonLabel: 'Buat Catatan Baru',
-                            onButtonTap: () => Get.toNamed(AppRoutes.noteAdd),
+                                'Catatan, ide, dan rangkuman kuliahmu akan muncul di sini.',
+                            isButtonCompact: true,
+                            primaryButtonLabel: 'Tulis Catatan',
+                            onPrimaryTap: () => Get.toNamed(AppRoutes.noteAdd),
                           ),
                         );
                       }
+
+                      if (filtered.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppDimens.margin,
+                            vertical: 16,
+                          ),
+                          child: EmptyStateCard(
+                            icon: Icons.search_off_rounded,
+                            title: 'Tidak Ditemukan',
+                            subtitle:
+                                'Tidak ada catatan yang cocok dengan pencarian "${controller.searchQuery.value}".',
+                            isButtonCompact: true,
+                            primaryButtonLabel: 'Tulis Catatan Baru',
+                            onPrimaryTap: () => Get.toNamed(AppRoutes.noteAdd),
+                          ),
+                        );
+                      }
+
+                      // Active Notes List (NO pill tabs per DESIGN.md)
+                      final today = controller.todayNotes;
+                      final past7 = controller.past7DaysNotes;
+                      final past30 = controller.past30DaysNotes;
+                      final older = controller.olderNotes;
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: AppDimens.margin),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Pinned Notes Section
-                            if (pinned.isNotEmpty) ...[
-                              const Row(
-                                children: [
-                                  Icon(Icons.push_pin_rounded, size: 14, color: AppColors.secondary),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'DISEMATKAN',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.secondary,
-                                      letterSpacing: 0.8,
-                                    ),
-                                  ),
-                                ],
+                            // Group 1: HARI INI (with push_pin icon)
+                            if (today.isNotEmpty) ...[
+                              const SectionLabel(
+                                label: 'HARI INI',
+                                leadingIcon: Icons.push_pin,
                               ),
-                              const SizedBox(height: 12),
-                              ...pinned.map((n) => NoteCard(note: n)),
+                              const SizedBox(height: 10),
+                              ...today.map((note) => NoteCard(note: note)),
                               const SizedBox(height: 16),
                             ],
 
-                            // Other Notes Section
-                            if (other.isNotEmpty) ...[
-                              if (pinned.isNotEmpty) ...[
-                                const Text(
-                                  'SEMUA CATATAN',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.secondary,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                              ],
-                              ...other.map((n) => NoteCard(note: n)),
+                            // Group 2: 7 HARI SEBELUMNYA
+                            if (past7.isNotEmpty) ...[
+                              const SectionLabel(label: '7 HARI SEBELUMNYA'),
+                              const SizedBox(height: 10),
+                              ...past7.map((note) => NoteCard(note: note)),
+                              const SizedBox(height: 16),
                             ],
+
+                            // Group 3: 30 HARI SEBELUMNYA
+                            if (past30.isNotEmpty) ...[
+                              const SectionLabel(label: '30 HARI SEBELUMNYA'),
+                              const SizedBox(height: 10),
+                              ...past30.map((note) => NoteCard(note: note)),
+                              const SizedBox(height: 16),
+                            ],
+
+                            // Group 4: Lebih Awal
+                            if (older.isNotEmpty) ...[
+                              const SectionLabel(label: 'LEBIH AWAL'),
+                              const SizedBox(height: 10),
+                              ...older.map((note) => NoteCard(note: note)),
+                              const SizedBox(height: 16),
+                            ],
+
+                            // Footer: Centered total notes label
+                            SectionLabel(
+                              label: '${filtered.length} CATATAN',
+                              isCentered: true,
+                            ),
                           ],
                         ),
                       );
@@ -153,4 +154,3 @@ class NoteView extends GetView<NoteController> {
     );
   }
 }
-

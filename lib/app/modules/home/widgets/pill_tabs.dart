@@ -13,7 +13,7 @@ class PillTabs extends GetView<TaskController> {
     'Kuliah',
     'Pekerjaan',
     'Pribadi',
-    'Kesehatan',
+    'Lainnya',
   ];
 
   @override

@@ -1,0 +1,108 @@
+<!DOCTYPE html><html lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<title>TaskFlow - Splash Screen</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;800&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            surface: '#F6F6F7',
+            primary: '#0A0A0A',
+            subtle: '#6F6F76',
+            muted: '#A8A8AE',
+            track: '#E2E2E5',
+          }
+        }
+      }
+    };
+  </script>
+<!-- Custom Typography & Layout Styles -->
+<style data-purpose="base-styling">
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #F6F6F7;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Ambient background radial highlight */
+    .splash-bg-glow {
+      background-image: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.025) 0%, rgba(246, 246, 247, 0) 65%);
+    }
+
+    /* Subtle diffuse shadow for the app icon */
+    .logo-glow {
+      filter: drop-shadow(0 20px 32px rgba(0, 0, 0, 0.07));
+    }
+  </style>
+<style>
+@keyframes loadingProgress {
+  0% { width: 0%; opacity: 0.7; }
+  50% { width: 65%; opacity: 1; }
+  85% { width: 90%; }
+  100% { width: 100%; }
+}
+.animate-loading {
+  animation: loadingProgress 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-loading {
+    animation: none;
+    width: 60%;
+  }
+}
+</style></head>
+<body class="flex items-center justify-center min-h-screen bg-[#E5E5E5] p-0 sm:p-4 selection:bg-neutral-300">
+<!-- BEGIN: MobileDeviceFrame -->
+<main class="relative w-full max-w-[390px] h-[844px] bg-[#F6F6F7] splash-bg-glow flex flex-col justify-between items-center overflow-hidden shadow-2xl sm:rounded-[48px]" data-purpose="splash-screen-container">
+<!-- BEGIN: CenterBranding -->
+<!-- Vertically centered branding block containing Logo, Title, and Tagline -->
+<section class="flex-1 w-full flex flex-col items-center justify-center px-6" data-purpose="app-branding">
+<!-- TaskFlow App Logo -->
+<div class="relative flex items-center justify-center">
+<!-- Soft ambient diffuse glow circle behind logo -->
+<div class="absolute w-36 h-36 rounded-full bg-black/[0.02] filter blur-xl pointer-events-none"></div>
+<img alt="TaskFlow Logo" class="w-[112px] h-[112px] object-contain logo-glow select-none" draggable="false" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMq3y4XkIqxsQgSySNLCl2apeXhLDERiualXqYiorBakLWO6O3sbSWB5IdtRjtIrEfVZGm_mraq_VigZTCvgksBlEhgv0QundC7JIUpIil89-dXcIWWuLpBzmxq80NcWZQtZtG9cujGvBFxz54RMDd3Y3ChAX8FVil4tHPzqlJYXurBhRv7Bi9TH5gyeWXf8bsZh0vTJv_msNpMN7MWvBsmcCNZ7rpSXq-FI6ruKtuAcEUnI4tOcK0Gw">
+</div>
+<!-- App Name: exactly 24px below logo -->
+<h1 class="mt-6 text-[28px] font-extrabold text-[#0A0A0A] tracking-tight text-center leading-none select-none">
+        TaskFlow
+      </h1>
+<!-- App Tagline: exactly 8px below title -->
+<p class="mt-2 text-[14px] font-medium text-[#6F6F76] text-center max-w-[280px] leading-relaxed select-none">
+        Kuliah, tugas, dan catatan dalam satu tempat
+      </p>
+</section>
+<!-- END: CenterBranding -->
+<!-- BEGIN: BottomLoadingAndVersion -->
+<!-- Bottom section positioned ~48px from bottom edge with loading indicator and version caption -->
+<footer class="w-full flex flex-col items-center pb-12 select-none" data-purpose="splash-loading-indicator">
+<!-- Track bar: 120px wide, 4px high, rounded full -->
+<div aria-valuemax="100" aria-valuemin="0" aria-valuenow="40" class="w-[120px] h-1 bg-[#E2E2E5] rounded-full overflow-hidden" role="progressbar">
+<!-- Inner filled bar: 40% filled -->
+<div class="h-full bg-[#0A0A0A] rounded-full animate-loading"></div>
+</div>
+<!-- App Version Caption: exactly 12px below bar -->
+<span class="mt-3 text-[12px] font-medium text-[#A8A8AE] tracking-normal leading-none">
+        Versi 1.0.0
+      </span>
+</footer>
+<!-- END: BottomLoadingAndVersion -->
+</main>
+<!-- END: MobileDeviceFrame -->
+
+
+</body></html>

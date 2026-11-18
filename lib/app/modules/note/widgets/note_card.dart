@@ -3,180 +3,199 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/app_shadows.dart';
+import '../../../core/theme/app_typography.dart';
 import '../../../data/models/note_model.dart';
 import '../../../routes/app_routes.dart';
 import '../note_controller.dart';
 
-class NoteCard extends GetView<NoteController> {
+/// NoteCard matching DESIGN.md:
+/// 24px radius, standard shadow, active scale 0.99.
+/// Header: time/date pill + optional 28px fill-1 circle with pin + more_vert (popover: only Hapus).
+/// Title (card-title, max 2 lines), preview (14px secondary, max 2 lines), fill-1 category chip.
+class NoteCard extends StatefulWidget {
   final NoteModel note;
 
   const NoteCard({super.key, required this.note});
 
   @override
+  State<NoteCard> createState() => _NoteCardState();
+}
+
+class _NoteCardState extends State<NoteCard> {
+  NoteController get controller => Get.find<NoteController>();
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
+    final note = widget.note;
     final dateStr = DateFormat('d MMM, HH:mm').format(note.updatedAt);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppDimens.gutter),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimens.radiusCard),
-        boxShadow: const [AppColors.cardShadow],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => Get.toNamed(AppRoutes.noteEdit, arguments: note),
-          borderRadius: BorderRadius.circular(AppDimens.radiusCard),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimens.spaceLg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Row 1: Date Pill + Pin Icon + More Actions
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      height: 28,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: AppColors.fill1,
-                        borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.access_time_rounded, size: 13, color: AppColors.secondary),
-                          const SizedBox(width: 5),
-                          Text(
-                            dateStr,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTap: () => Get.toNamed(AppRoutes.noteEdit, arguments: note),
+      child: AnimatedScale(
+        scale: _pressed ? 0.99 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: AppDimens.gutter),
+          padding: const EdgeInsets.all(AppDimens.spaceLg),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+            boxShadow: const [AppShadows.standard],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Row 1: Date Pill + Pinned Circle + More Actions (Only Hapus)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Date / Time Pill
+                      Container(
+                        height: 28,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.fill1,
+                          borderRadius: BorderRadius.circular(AppDimens.radiusFull),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.schedule,
+                              size: 14,
                               color: AppColors.secondary,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Row(
-                      children: [
-                        // Pin Toggle Icon
-                        IconButton(
-                          icon: Icon(
-                            note.isPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
-                            size: 18,
-                            color: note.isPinned ? AppColors.primary : AppColors.tertiary,
-                          ),
-                          onPressed: () => controller.togglePin(note.id),
-                          tooltip: note.isPinned ? 'Lepas Sematan' : 'Sematkan ke Atas',
-                          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                          padding: EdgeInsets.zero,
-                        ),
-
-                        PopupMenuButton<String>(
-                          icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppColors.secondary),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                          ),
-                          onSelected: (val) {
-                            if (val == 'edit') {
-                              Get.toNamed(AppRoutes.noteEdit, arguments: note);
-                            } else if (val == 'delete') {
-                              controller.deleteNote(note.id);
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
-                                  SizedBox(width: 10),
-                                  Text('Edit Catatan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuDivider(height: 1),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
-                                  SizedBox(width: 10),
-                                  Text('Hapus', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.error)),
-                                ],
+                            const SizedBox(width: 5),
+                            Text(
+                              dateStr,
+                              style: AppTypography.captionMeta.copyWith(
+                                color: AppColors.secondary,
                               ),
                             ),
                           ],
                         ),
+                      ),
+
+                      // 28px fill-1 circle with pin for pinned notes
+                      if (note.isPinned) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: const BoxDecoration(
+                            color: AppColors.fill1,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.push_pin,
+                              size: 14,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Row 2: Title
-                Text(
-                  note.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                    height: 1.3,
+                    ],
                   ),
+
+                  // Popover Menu (Notes: ONLY "Hapus")
+                  PopupMenuButton<String>(
+                    tooltip: 'Menu opsi',
+                    position: PopupMenuPosition.under,
+                    offset: const Offset(0, 8),
+                    elevation: 8,
+                    shadowColor: Colors.black.withValues(alpha: 0.14),
+                    surfaceTintColor: Colors.transparent,
+                    color: AppColors.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: AppColors.divider.withValues(alpha: 0.8),
+                        width: 1,
+                      ),
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 120),
+                    onSelected: (val) {
+                      if (val == 'delete') {
+                        controller.deleteNote(note.id);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'delete',
+                        height: 44,
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.delete_outline,
+                              size: 18,
+                              color: AppColors.onSurface,
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Hapus',
+                              style: AppTypography.bodyDefault.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: AppColors.fill1,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.more_vert_rounded,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Title (card-title, max 2 lines)
+              Text(
+                note.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.cardTitle.copyWith(
+                  color: AppColors.onSurface,
                 ),
+              ),
+              const SizedBox(height: 6),
 
-                const SizedBox(height: 8),
-
-                // Row 3: Preview (max 2 lines)
+              // Preview (14px secondary, max 2 lines)
+              if (note.content.isNotEmpty)
                 Text(
                   note.content,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                  style: AppTypography.bodyDefault.copyWith(
                     color: AppColors.secondary,
                     height: 1.4,
                   ),
                 ),
-
-                const SizedBox(height: 12),
-
-                // Row 4: Tag Category Pill
-                Container(
-                  height: 24,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.fill1,
-                    borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.label_outline_rounded, size: 12, color: AppColors.secondary),
-                      const SizedBox(width: 4),
-                      Text(
-                        note.category,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.secondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 }
-

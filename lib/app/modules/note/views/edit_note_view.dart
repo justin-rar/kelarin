@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/app_shadows.dart';
+import '../../../core/theme/app_typography.dart';
 import '../../../data/models/note_model.dart';
+import '../../../global_widgets/confirmation_dialog.dart';
+import '../../../global_widgets/form_top_bar.dart';
 import '../note_controller.dart';
 
 class EditNoteView extends StatefulWidget {
@@ -13,25 +18,38 @@ class EditNoteView extends StatefulWidget {
 }
 
 class _EditNoteViewState extends State<EditNoteView> {
-  final NoteController controller = Get.find<NoteController>();
+  late final NoteController controller;
   late NoteModel note;
 
   late TextEditingController titleController;
   late TextEditingController contentController;
 
-  late String selectedCategory;
   late bool isPinned;
-
-  final List<String> categories = ['Kuliah', 'Proyek', 'Pribadi'];
 
   @override
   void initState() {
     super.initState();
-    note = Get.arguments as NoteModel;
+    controller = Get.isRegistered<NoteController>()
+        ? Get.find<NoteController>()
+        : Get.put(NoteController(), permanent: true);
+
+    if (Get.arguments is NoteModel) {
+      note = Get.arguments as NoteModel;
+    } else if (controller.notes.isNotEmpty) {
+      note = controller.notes.first;
+    } else {
+      note = NoteModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        title: '',
+        content: '',
+        updatedAt: DateTime.now(),
+      );
+    }
     titleController = TextEditingController(text: note.title);
     contentController = TextEditingController(text: note.content);
-    selectedCategory = categories.contains(note.category) ? note.category : 'Kuliah';
     isPinned = note.isPinned;
+
+    contentController.addListener(() => setState(() {}));
   }
 
   @override
@@ -39,6 +57,12 @@ class _EditNoteViewState extends State<EditNoteView> {
     titleController.dispose();
     contentController.dispose();
     super.dispose();
+  }
+
+  int get wordCount {
+    final text = contentController.text.trim();
+    if (text.isEmpty) return 0;
+    return text.split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length;
   }
 
   void _updateNote() {
@@ -50,8 +74,8 @@ class _EditNoteViewState extends State<EditNoteView> {
         'Perhatian',
         'Judul catatan wajib diisi!',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: AppColors.error,
-        colorText: AppColors.onError,
+        backgroundColor: AppColors.primary,
+        colorText: AppColors.onPrimary,
       );
       return;
     }
@@ -60,7 +84,6 @@ class _EditNoteViewState extends State<EditNoteView> {
       title: title,
       content: content,
       updatedAt: DateTime.now(),
-      category: selectedCategory,
       isPinned: isPinned,
     );
 
@@ -68,173 +91,297 @@ class _EditNoteViewState extends State<EditNoteView> {
     Get.back();
   }
 
+  void _confirmDelete() {
+    ConfirmationDialog.show(
+      title: 'Hapus Catatan?',
+      message: 'Apakah Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.',
+      icon: Icons.delete_outline_rounded,
+      confirmText: 'Hapus',
+      cancelText: 'Batal',
+      isDestructive: true,
+      onConfirm: () {
+        Get.back(); // close dialog
+        controller.deleteNote(note.id);
+        Get.back(); // close edit screen
+      },
+    );
+  }
+
+  void _insertFormatting(String prefix, [String suffix = '']) {
+    final text = contentController.text;
+    final selection = contentController.selection;
+    if (selection.isValid && selection.start >= 0 && selection.end >= 0) {
+      final selectedText = text.substring(selection.start, selection.end);
+      final newText = text.replaceRange(
+        selection.start,
+        selection.end,
+        '$prefix$selectedText$suffix',
+      );
+      contentController.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(
+          offset: selection.start + prefix.length + selectedText.length + suffix.length,
+        ),
+      );
+    } else {
+      contentController.text = '$text\n$prefix$suffix';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final timeStr = DateFormat('HH:mm').format(note.updatedAt);
+    final dateStr = DateFormat('d MMM').format(note.updatedAt);
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Center(
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                shape: BoxShape.circle,
-                boxShadow: const [AppColors.cardShadow],
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, size: 20, color: AppColors.primary),
-                onPressed: () => Get.back(),
-              ),
-            ),
-          ),
-        ),
-        title: const Text(
-          'Edit Catatan',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-            onPressed: () {
-              controller.deleteNote(note.id);
-              Get.back();
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
+            // Standard FormTopBar (64px, arrow_back, modal-title)
+            const FormTopBar(title: 'Edit Catatan'),
+
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(AppDimens.margin),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimens.margin,
+                  vertical: 16,
+                ),
                 children: [
-                  _buildLabel('JUDUL CATATAN *'),
+                  // 1. One Large White Card (24px radius, minHeight 460)
                   Container(
-                    height: 52,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    constraints: const BoxConstraints(minHeight: 460),
+                    padding: const EdgeInsets.all(AppDimens.spaceXl),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                      boxShadow: const [AppColors.cardShadow],
+                      borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+                      boxShadow: const [AppShadows.standard],
                     ),
-                    child: TextField(
-                      controller: titleController,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                      decoration: const InputDecoration(
-                        hintText: 'Judul rangkuman...',
-                        border: InputBorder.none,
-                        isDense: true,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Status Header Line
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.schedule,
+                              size: 14,
+                              color: AppColors.secondary,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Terakhir diedit $timeStr WIB • $dateStr',
+                              style: AppTypography.captionMeta.copyWith(
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Title Input (24px w800, borderless)
+                        TextField(
+                          controller: titleController,
+                          style: AppTypography.headlineH1.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Judul catatan',
+                            hintStyle: AppTypography.headlineH1.copyWith(
+                              color: AppColors.outline,
+                            ),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        const Divider(height: 1, color: AppColors.divider),
+                        const SizedBox(height: 14),
+
+                        // Content Textarea (borderless, multiline)
+                        TextField(
+                          controller: contentController,
+                          maxLines: null,
+                          minLines: 10,
+                          style: AppTypography.bodyDefault.copyWith(
+                            color: AppColors.onSurface,
+                            height: 1.5,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Mulai menulis catatan di sini...',
+                            hintStyle: AppTypography.bodyDefault.copyWith(
+                              color: AppColors.outline,
+                            ),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        const Divider(height: 1, color: AppColors.divider),
+                        const SizedBox(height: 12),
+
+                        // Status Footer: Grey dot + "Tersimpan otomatis", "MARKDOWN" tag
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.outline,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Tersimpan otomatis',
+                                  style: AppTypography.captionMeta.copyWith(
+                                    color: AppColors.secondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.fill1,
+                                borderRadius: BorderRadius.circular(AppDimens.radiusFull),
+                              ),
+                              child: Text(
+                                'MARKDOWN',
+                                style: AppTypography.captionMeta.copyWith(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.8,
+                                  color: AppColors.secondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildLabel('KATEGORI'),
-                          Wrap(
-                            spacing: 8,
-                            children: categories.map((cat) {
-                              final isSelected = selectedCategory == cat;
-                              return ChoiceChip(
-                                label: Text(cat),
-                                selected: isSelected,
-                                selectedColor: AppColors.primary,
-                                backgroundColor: AppColors.fill1,
-                                labelStyle: TextStyle(
-                                  color: isSelected ? AppColors.onPrimary : AppColors.secondary,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                                  side: BorderSide.none,
-                                ),
-                                showCheckmark: false,
-                                onSelected: (_) => setState(() => selectedCategory = cat),
-                              );
-                            }).toList(),
-                          ),
-                        ],
-                      ),
-
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          _buildLabel('SEMATKAN'),
-                          IconButton(
-                            icon: Icon(
-                              isPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
-                              color: isPinned ? AppColors.primary : AppColors.tertiary,
+                  // 2. Formatting Dock Card (16px radius, surface, standard shadow)
+                  Container(
+                    height: 52,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppDimens.radius2Xl),
+                      boxShadow: const [AppShadows.standard],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Text('B', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                              onPressed: () => _insertFormatting('**', '**'),
+                              tooltip: 'Tebal',
                             ),
-                            onPressed: () => setState(() => isPinned = !isPinned),
+                            IconButton(
+                              icon: const Icon(Icons.format_list_bulleted, size: 20),
+                              onPressed: () => _insertFormatting('- '),
+                              tooltip: 'Daftar',
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.check_box_outlined, size: 20),
+                              onPressed: () => _insertFormatting('- [ ] '),
+                              tooltip: 'Checklist',
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                                size: 20,
+                                color: isPinned ? AppColors.primary : AppColors.secondary,
+                              ),
+                              onPressed: () => setState(() => isPinned = !isPinned),
+                              tooltip: 'Sematkan',
+                            ),
+                            const VerticalDivider(width: 8, indent: 14, endIndent: 14, color: AppColors.divider),
+                            IconButton(
+                              icon: const Icon(Icons.image_outlined, size: 20),
+                              onPressed: () => _insertFormatting('![Gambar](url)'),
+                              tooltip: 'Gambar',
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Text(
+                            '$wordCount kata',
+                            style: AppTypography.captionMeta.copyWith(
+                              color: AppColors.outline,
+                            ),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // 3. Ambient Guidance
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.lock_outline, size: 14, color: AppColors.outline),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Enkripsi lokal aktif • Hanya Anda yang dapat membaca catatan ini',
+                        style: AppTypography.captionMeta.copyWith(
+                          fontSize: 11,
+                          color: AppColors.outline,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
 
-                  _buildLabel('ISI CATATAN'),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                      boxShadow: const [AppColors.cardShadow],
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    child: TextField(
-                      controller: contentController,
-                      maxLines: 14,
-                      style: const TextStyle(fontSize: 14, height: 1.5, fontWeight: FontWeight.w500),
-                      decoration: const InputDecoration(
-                        hintText: 'Tuliskan catatan lengkap di sini...',
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
+                  // 4. Page Flow Stacked Buttons
+                  ElevatedButton(
+                    onPressed: _updateNote,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.onPrimary,
+                      elevation: 0,
+                      minimumSize: const Size(double.infinity, 52),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppDimens.radiusFull),
                       ),
                     ),
+                    child: Text(
+                      'Simpan Perubahan',
+                      style: AppTypography.buttonText.copyWith(color: AppColors.onPrimary),
+                    ),
                   ),
+                  const SizedBox(height: 8),
+                  TextButton.icon(
+                    onPressed: _confirmDelete,
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppColors.fill1,
+                      foregroundColor: AppColors.onSurface,
+                      minimumSize: const Size(double.infinity, 52),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppDimens.radiusFull),
+                      ),
+                    ),
+                    icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.onSurface),
+                    label: Text(
+                      'Hapus Catatan',
+                      style: AppTypography.buttonText.copyWith(color: AppColors.onSurface),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                 ],
-              ),
-            ),
-
-            Container(
-              padding: const EdgeInsets.all(AppDimens.margin),
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Color.fromRGBO(0, 0, 0, 0.05),
-                    blurRadius: 16,
-                    offset: Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: _updateNote,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.onPrimary,
-                  elevation: 0,
-                  minimumSize: const Size(double.infinity, 52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                  ),
-                ),
-                child: const Text(
-                  'Simpan Perubahan',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                ),
               ),
             ),
           ],
@@ -242,20 +389,4 @@ class _EditNoteViewState extends State<EditNoteView> {
       ),
     );
   }
-
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8, left: 2),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          color: AppColors.secondary,
-          letterSpacing: 0.8,
-        ),
-      ),
-    );
-  }
 }
-

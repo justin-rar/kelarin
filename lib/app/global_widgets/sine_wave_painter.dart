@@ -1,12 +1,13 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../core/constants/app_colors.dart';
 
 class SineWavePainter extends CustomPainter {
   final Color color;
   final double strokeWidth;
 
   SineWavePainter({
-    this.color = const Color(0xFF0A0A0A),
+    this.color = AppColors.primary,
     this.strokeWidth = 2.0,
   });
 

@@ -3,12 +3,13 @@ import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../global_widgets/app_header.dart';
+import '../../../global_widgets/confirmation_dialog.dart';
+import '../../../global_widgets/course_card.dart';
 import '../../../global_widgets/empty_state.dart';
 import '../../../global_widgets/page_title_row.dart';
 import '../../../routes/app_routes.dart';
 import '../../ai/views/tanya_ai_bottom_sheet.dart';
 import '../attendance_controller.dart';
-import '../widgets/attendance_card.dart';
 
 class AttendanceView extends GetView<AttendanceController> {
   const AttendanceView({super.key});
@@ -21,6 +22,7 @@ class AttendanceView extends GetView<AttendanceController> {
         bottom: false,
         child: Column(
           children: [
+            // Fixed AppHeader (56px, blur + background/90)
             AppHeader(
               onAiTap: () => TanyaAiBottomSheet.show(context),
             ),
@@ -33,28 +35,31 @@ class AttendanceView extends GetView<AttendanceController> {
                 child: ListView(
                   padding: const EdgeInsets.only(bottom: 120),
                   children: [
-                    PageTitleRow(
-                      title: 'Jadwal Kuliah',
-                      filterText: '+ Tambah',
-                      onFilterTap: () => Get.toNamed(AppRoutes.attendanceAdd),
-                    ),
+                    // 1. Page Title Row: Eyebrow "JADWAL KITA" + "Presensi Aktif" + count pill
+                    Obx(() => PageTitleRow(
+                          eyebrow: 'JADWAL KITA',
+                          title: 'Presensi Aktif',
+                          countText: '${controller.attendances.length} Mata Kuliah',
+                        )),
                     const SizedBox(height: 16),
 
+                    // 2. Active Courses List or Empty State
                     Obx(() {
                       final list = controller.attendances;
                       if (list.isEmpty) {
                         return Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppDimens.margin,
-                            vertical: 24,
+                            vertical: 8,
                           ),
                           child: EmptyStateCard(
                             icon: Icons.calendar_today_rounded,
-                            title: 'Belum Ada Jadwal Kuliah',
+                            showBadgeAddOnIcon: true,
+                            title: 'Belum Ada Jadwal Absen',
                             subtitle:
-                                'Tambahkan mata kuliah teori atau praktikum Anda untuk memantau presensi dan pengingat kelas.',
-                            buttonLabel: 'Tambah Jadwal',
-                            onButtonTap: () => Get.toNamed(AppRoutes.attendanceAdd),
+                                'Kamu belum menambahkan mata kuliah atau jadwal presensi. Tambahkan jadwal kuliahmu agar tidak melewatkan waktu absen.',
+                            primaryButtonLabel: 'Tambah Absen',
+                            onPrimaryTap: () => Get.toNamed(AppRoutes.attendanceAdd),
                           ),
                         );
                       }
@@ -62,26 +67,13 @@ class AttendanceView extends GetView<AttendanceController> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: AppDimens.margin),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: AppColors.fill1,
-                                borderRadius: BorderRadius.circular(AppDimens.radiusFull),
-                              ),
-                              child: Text(
-                                '${list.length} Mata Kuliah Terjadwal',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.secondary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            ...list.map((att) => AttendanceCard(attendance: att)),
-                          ],
+                          children: list
+                              .map((att) => CourseCard(
+                                    attendance: att,
+                                    onToggleReminder: () => controller.toggleReminder(att.id),
+                                    onDelete: () => _confirmDelete(att.id, att.subjectName),
+                                  ))
+                              .toList(),
                         ),
                       );
                     }),
@@ -94,5 +86,19 @@ class AttendanceView extends GetView<AttendanceController> {
       ),
     );
   }
-}
 
+  void _confirmDelete(String id, String subjectName) {
+    ConfirmationDialog.show(
+      title: 'Hapus Jadwal?',
+      message: 'Apakah Anda yakin ingin menghapus jadwal presensi $subjectName?',
+      icon: Icons.event_busy_rounded,
+      confirmText: 'Hapus',
+      cancelText: 'Batal',
+      isDestructive: true,
+      onConfirm: () {
+        Get.back();
+        controller.deleteAttendance(id);
+      },
+    );
+  }
+}

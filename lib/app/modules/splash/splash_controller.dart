@@ -21,11 +21,13 @@ class SplashController extends GetxController {
 
     await Future.delayed(const Duration(milliseconds: 200));
 
-    if (_storage.isPinEnabled) {
+    // Check if initial profile setup is done
+    if (!_storage.isProfileSetupDone) {
+      Get.offAllNamed(AppRoutes.onboarding);
+    } else if (_storage.isPinEnabled) {
       Get.offAllNamed(AppRoutes.pin, arguments: {'isAuth': true});
     } else {
       Get.offAllNamed(AppRoutes.main);
     }
   }
 }
-

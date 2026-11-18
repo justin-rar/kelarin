@@ -1,0 +1,137 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_stack" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#f9f9fa;}body{overscroll-behavior:none;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: 'class', theme: { extend: { colors: { 'surface-container-highest': '#e2e2e3', 'tertiary-fixed-dim': '#c6c6cc', 'fill-1': '#EFEFF1', 'surface-container-high': '#e8e8e9', 'on-primary-fixed': '#1c1b1b', 'tertiary-fixed': '#e2e2e8', 'surface-tint': '#5f5e5e', 'on-primary': '#ffffff', 'on-background': '#1a1c1d', 'primary': '#000000', 'on-primary-container': '#858383', 'background': '#f9f9fa', 'on-error': '#ffffff', 'inverse-on-surface': '#f0f1f2', 'surface-variant': '#e2e2e3', 'primary-fixed': '#e5e2e1', 'surface-dim': '#dadadb', 'inverse-primary': '#c9c6c5', 'on-tertiary-fixed-variant': '#45464c', 'surface-container-low': '#f3f3f4', 'stat-light': '#EDEDEF', 'on-primary-fixed-variant': '#474646', 'tertiary-container': '#1a1b20', 'surface-container-lowest': '#ffffff', 'tertiary': '#000000', 'stat-dark': '#E2E2E5', 'primary-fixed-dim': '#c9c6c5', 'on-secondary-fixed-variant': '#46464d', 'on-tertiary-container': '#838389', 'secondary': '#5e5e65', 'on-tertiary': '#ffffff', 'secondary-fixed': '#e3e1e9', 'on-tertiary-fixed': '#1a1b20', 'divider': '#ECECEE', 'on-surface': '#1a1c1d', 'secondary-fixed-dim': '#c7c6cd', 'outline': '#747878', 'inverse-surface': '#2f3132', 'error': '#ba1a1a', 'surface-bright': '#f9f9fa', 'on-surface-variant': '#444748', 'on-error-container': '#93000a', 'on-secondary': '#ffffff', 'surface': '#FFFFFF', 'on-secondary-container': '#626269', 'secondary-container': '#e0dfe7', 'primary-container': '#1c1b1b', 'on-secondary-fixed': '#1a1b21', 'error-container': '#ffdad6', 'outline-variant': '#c4c7c7', 'surface-container': '#eeeeef' }, borderRadius: { 'DEFAULT': '0.25rem', 'lg': '0.5rem', 'xl': '0.75rem', 'full': '9999px' }, spacing: { 'space-xl': '1.5rem', 'space-md': '0.75rem', 'margin': '1.25rem', 'space-xs': '0.25rem', 'space-lg': '1rem', 'space-sm': '0.5rem', 'gutter': '0.75rem' }, fontFamily: { 'modal-title': ['Plus Jakarta Sans'], 'stat-number': ['Plus Jakarta Sans'], 'field-label': ['Plus Jakarta Sans'], 'headline-h1': ['Plus Jakarta Sans'], 'body-default': ['Plus Jakarta Sans'], 'card-title': ['Plus Jakarta Sans'], 'splash-title': ['Plus Jakarta Sans'], 'nav-label': ['Plus Jakarta Sans'], 'button-text': ['Plus Jakarta Sans'], 'caption-meta': ['Plus Jakarta Sans'] }, fontSize: { 'modal-title': ['18px', { 'lineHeight': '24px', 'fontWeight': '700' }], 'stat-number': ['32px', { 'lineHeight': '38px', 'letterSpacing': '-0.03em', 'fontWeight': '800' }], 'field-label': ['12px', { 'lineHeight': '16px', 'fontWeight': '700' }], 'headline-h1': ['24px', { 'lineHeight': '32px', 'letterSpacing': '-0.02em', 'fontWeight': '800' }], 'body-default': ['14px', { 'lineHeight': '20px', 'fontWeight': '500' }], 'card-title': ['16px', { 'lineHeight': '22px', 'fontWeight': '700' }], 'splash-title': ['28px', { 'lineHeight': '36px', 'letterSpacing': '-0.02em', 'fontWeight': '800' }], 'nav-label': ['11px', { 'lineHeight': '14px', 'fontWeight': '600' }], 'button-text': ['14px', { 'lineHeight': '20px', 'fontWeight': '700' }], 'caption-meta': ['12px', { 'lineHeight': '16px', 'fontWeight': '500' }] } } } };</script></head><body class="bg-background font-body-default text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-background/85 backdrop-blur-xl pt-safe"><div class="h-14 px-margin flex items-center justify-between"><button aria-label="Kembali" class="w-11 h-11 rounded-full bg-surface shadow-[0_8px_24px_rgba(0,0,0,0.06)] flex items-center justify-center text-on-surface hover:bg-surface-container transition-colors active:scale-95" onclick="history.back()"><span class="material-symbols-outlined text-[20px]">arrow_back</span></button><h1 class="font-modal-title text-modal-title text-on-surface text-center flex-1 mx-space-sm truncate">Edit Catatan</h1><div class="w-11 h-11 shrink-0" aria-hidden="true"></div></div></header><main class="flex flex-col relative w-full pt-14 pb-safe bg-background px-margin"><div class="flex flex-col w-full pb-8"><!-- Note Sheet Main Card -->
+<div class="bg-surface rounded-[24px] shadow-[0_8px_24px_rgba(0,0,0,0.06)] p-5 flex flex-col min-h-[480px] relative transition-all">
+<!-- Meta Bar: Category Chips & Timestamp -->
+<div class="flex items-center justify-between gap-space-sm mb-4"><div class="flex items-center gap-1.5 text-secondary"><span class="material-symbols-outlined text-[14px]">schedule</span><span class="font-caption-meta text-caption-meta">Terakhir diedit 15:30 WIB • 24 Okt</span></div></div>
+<!-- Title Input (clean, wrapped/untruncated, robust display) -->
+<input class="w-full bg-transparent border-0 outline-none p-0 font-headline-h1 text-headline-h1 text-on-surface placeholder:text-outline/70 focus:ring-0 leading-tight tracking-tight selection:bg-surface-container-highest" id="noteTitle" placeholder="Judul catatan" type="text" value="Rangkuman Materi Basis Data">
+<!-- Subtle Structural Divider -->
+<div class="w-full h-[1px] bg-divider my-3.5"></div>
+<!-- Note Content Area -->
+<div class="relative w-full flex-1 flex flex-col">
+<textarea class="w-full flex-1 bg-transparent border-0 outline-none p-0 font-body-default text-body-default text-on-surface placeholder:text-outline/70 focus:ring-0 resize-none leading-relaxed selection:bg-surface-container-highest" id="noteBody" placeholder="Mulai menulis..." rows="9">Diskusi seputar normalisasi bentuk 3NF dan BCNF pada relasi transaksi terdistribusi.
+
+1. Identifikasi ketergantungan transitif
+2. Pembentukan primary key komposit
+3. Audit indeks multi-kolom untuk optimasi query
+
+Catatan: Tugas kelompok dikumpulkan sebelum sesi praktikum hari Jumat.</textarea>
+</div>
+<!-- Status Footer -->
+<div class="pt-3 mt-auto flex items-center justify-between text-outline text-[12px] border-t border-divider/60"><div class="flex items-center gap-1.5 font-caption-meta text-caption-meta text-secondary"><span class="w-2 h-2 rounded-full bg-primary/30 shrink-0"></span><span>Tersimpan otomatis</span></div><div class="flex items-center gap-2"><span class="font-caption-meta text-caption-meta uppercase tracking-wider text-[10px] bg-fill-1 px-2.5 py-0.5 rounded-full text-secondary font-semibold shrink-0">Markdown</span></div></div>
+</div>
+<!-- Formatting Docked Card -->
+<div class="mt-4 bg-surface rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.06)] p-2 flex items-center justify-between">
+<!-- Icon Action Cluster -->
+<div class="flex items-center gap-0.5">
+<button aria-label="Format Tebal" class="w-9 h-9 rounded-xl flex items-center justify-center text-on-surface hover:bg-fill-1 active:scale-95 transition-all" id="btnBold" title="Tebal" type="button">
+<span class="font-button-text text-button-text font-black text-[15px]">B</span>
+</button>
+<button aria-label="Daftar Poin" class="w-9 h-9 rounded-xl flex items-center justify-center text-on-surface hover:bg-fill-1 active:scale-95 transition-all" id="btnList" title="Daftar" type="button">
+<span class="material-symbols-outlined text-[20px]">format_list_bulleted</span>
+</button>
+<button aria-label="Kotak Centang" class="w-9 h-9 rounded-xl flex items-center justify-center text-on-surface hover:bg-fill-1 active:scale-95 transition-all" id="btnChecklist" title="Checklist" type="button">
+<span class="material-symbols-outlined text-[20px]">check_box</span>
+</button>
+<button aria-label="Sematkan Catatan" class="w-9 h-9 rounded-xl flex items-center justify-center text-secondary hover:text-on-surface hover:bg-fill-1 active:scale-95 transition-all" id="btnPin" title="Sematkan" type="button">
+<span class="material-symbols-outlined text-[20px]">keep</span>
+</button>
+<div class="w-[1px] h-5 bg-divider mx-1"></div>
+<button aria-label="Sisipkan Gambar" class="w-9 h-9 rounded-xl flex items-center justify-center text-secondary hover:text-on-surface hover:bg-fill-1 active:scale-95 transition-all" id="btnAttach" title="Lampiran" type="button">
+<span class="material-symbols-outlined text-[20px]">image</span>
+</button>
+</div>
+<!-- Metrics Status -->
+<div class="pr-2 flex items-center gap-1.5">
+<span class="font-caption-meta text-caption-meta text-outline tabular-nums" id="wordCountLabel">36 kata</span>
+</div>
+</div>
+<!-- Ambient Guidance -->
+<div class="mt-4 px-3 flex items-center justify-center gap-2 text-outline/60">
+<span class="material-symbols-outlined text-[15px]">lock</span>
+<span class="font-caption-meta text-caption-meta text-[11px]">Enkripsi lokal aktif • Hanya Anda yang dapat membaca catatan ini</span>
+</div><div class="mt-6 flex flex-col gap-2.5 w-full"><button type="button" aria-label="Simpan Perubahan" class="w-full h-[52px] rounded-full bg-primary text-on-primary font-button-text text-button-text flex items-center justify-center shadow-sm hover:opacity-90 active:scale-95 transition-all">Simpan Perubahan</button><button type="button" aria-label="Hapus Catatan" class="w-full h-11 rounded-full bg-fill-1 text-on-surface hover:bg-surface-container font-button-text text-button-text flex items-center justify-center gap-2 transition-all active:scale-95"><span class="material-symbols-outlined text-[18px]">delete</span><span>Hapus Catatan</span></button></div></div>
+<script>
+  (function initCatatanBaru() {
+    const textarea = document.getElementById('noteBody');
+    const wordCountLabel = document.getElementById('wordCountLabel');
+    const chips = document.querySelectorAll('.category-chip');
+    const btnPin = document.getElementById('btnPin');
+    const btnBold = document.getElementById('btnBold');
+    const btnList = document.getElementById('btnList');
+    const btnChecklist = document.getElementById('btnChecklist');
+
+    // 1. Live Word Count Calculator
+    function updateMetrics() {
+      if (!textarea || !wordCountLabel) return;
+      const text = textarea.value.trim();
+      const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+      wordCountLabel.textContent = `${words} kata`;
+    }
+
+    if (textarea) {
+      textarea.addEventListener('input', updateMetrics);
+      updateMetrics();
+    }
+
+    // 2. Interactive Category Toggle (Monochrome rules)
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chips.forEach(c => {
+          c.classList.remove('bg-primary', 'text-on-primary', 'font-field-label', 'text-field-label', 'shadow-sm');
+          c.classList.add('bg-fill-1', 'text-secondary', 'font-caption-meta', 'text-caption-meta');
+        });
+        chip.classList.remove('bg-fill-1', 'text-secondary', 'font-caption-meta', 'text-caption-meta');
+        chip.classList.add('bg-primary', 'text-on-primary', 'font-field-label', 'text-field-label', 'shadow-sm');
+      });
+    });
+
+    // 3. Pin Toggle Behavior
+    let isPinned = false;
+    if (btnPin) {
+      btnPin.addEventListener('click', () => {
+        isPinned = !isPinned;
+        const icon = btnPin.querySelector('.material-symbols-outlined');
+        if (isPinned) {
+          btnPin.classList.remove('text-secondary');
+          btnPin.classList.add('bg-primary', 'text-on-primary');
+          if (icon) icon.style.fontVariationSettings = "'FILL' 1";
+        } else {
+          btnPin.classList.remove('bg-primary', 'text-on-primary');
+          btnPin.classList.add('text-secondary');
+          if (icon) icon.style.fontVariationSettings = "'FILL' 0";
+        }
+      });
+    }
+
+    // 4. Quick Toolbar Snippet Injections
+    function wrapOrPrepend(prefix, suffix = '') {
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const val = textarea.value;
+      const selected = val.substring(start, end);
+
+      const replacement = prefix + selected + suffix;
+      textarea.value = val.substring(0, start) + replacement + val.substring(end);
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+      updateMetrics();
+    }
+
+    if (btnBold) {
+      btnBold.addEventListener('click', () => wrapOrPrepend('**', '**'));
+    }
+
+    if (btnList) {
+      btnList.addEventListener('click', () => wrapOrPrepend('\n• '));
+    }
+
+    if (btnChecklist) {
+      btnChecklist.addEventListener('click', () => wrapOrPrepend('\n[ ] '));
+    }
+  })();
+</script></main>
+
+
+</body></html>

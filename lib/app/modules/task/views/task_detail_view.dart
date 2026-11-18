@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/constants/app_shadows.dart';
+import '../../../core/theme/app_typography.dart';
 import '../../../data/models/task_model.dart';
+import '../../../global_widgets/form_top_bar.dart';
 import '../../../routes/app_routes.dart';
 import '../task_controller.dart';
 
@@ -11,11 +14,13 @@ class TaskDetailView extends GetView<TaskController> {
 
   @override
   Widget build(BuildContext context) {
-    final taskArg = Get.arguments as TaskModel?;
+    final taskArg = Get.arguments is TaskModel ? (Get.arguments as TaskModel) : null;
     if (taskArg == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Detail Tugas')),
-        body: const Center(child: Text('Tugas tidak ditemukan')),
+        backgroundColor: AppColors.background,
+        body: const SafeArea(
+          child: Center(child: Text('Tugas tidak ditemukan')),
+        ),
       );
     }
 
@@ -28,62 +33,39 @@ class TaskDetailView extends GetView<TaskController> {
 
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 16),
-            child: Center(
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  shape: BoxShape.circle,
-                  boxShadow: const [AppColors.cardShadow],
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded, size: 20, color: AppColors.primary),
-                  onPressed: () => Get.back(),
-                ),
-              ),
-            ),
-          ),
-          title: const Text(
-            'Detail Tugas',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  shape: BoxShape.circle,
-                  boxShadow: const [AppColors.cardShadow],
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.primary),
-                  onPressed: () => Get.toNamed(AppRoutes.taskEdit, arguments: currentTask),
-                ),
-              ),
-            ),
-          ],
-        ),
         body: SafeArea(
+          bottom: false,
           child: Column(
             children: [
+              // Standard FormTopBar with Edit button on right
+              FormTopBar(
+                title: 'Detail Tugas',
+                trailing: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    shape: BoxShape.circle,
+                    boxShadow: const [AppShadows.standard],
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.primary),
+                    onPressed: () => Get.toNamed(AppRoutes.taskEdit, arguments: currentTask),
+                  ),
+                ),
+              ),
+
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.all(AppDimens.margin),
                   children: [
-                    // Main Card
+                    // Main Card (24px radius, standard shadow)
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(AppDimens.spaceXl),
                       decoration: BoxDecoration(
                         color: AppColors.surface,
                         borderRadius: BorderRadius.circular(AppDimens.radiusCard),
-                        boxShadow: const [AppColors.cardShadow],
+                        boxShadow: const [AppShadows.standard],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,8 +79,7 @@ class TaskDetailView extends GetView<TaskController> {
                             ),
                             child: Text(
                               currentTask.isCompleted ? '✓ Selesai' : 'Sedang Berjalan',
-                              style: TextStyle(
-                                fontSize: 12,
+                              style: AppTypography.captionMeta.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: currentTask.isCompleted
                                     ? AppColors.onPrimary
@@ -111,26 +92,23 @@ class TaskDetailView extends GetView<TaskController> {
                           // Title
                           Text(
                             currentTask.title,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
+                            style: AppTypography.headlineH1.copyWith(
                               color: currentTask.isCompleted
                                   ? AppColors.secondary
                                   : AppColors.primary,
                               decoration: currentTask.isCompleted
                                   ? TextDecoration.lineThrough
                                   : null,
-                              height: 1.3,
                             ),
                           ),
                           const SizedBox(height: 20),
 
-                          const Divider(),
+                          const Divider(height: 1, color: AppColors.divider),
                           const SizedBox(height: 16),
 
                           // Schedule Row
                           _buildInfoRow(
-                            icon: Icons.calendar_today_rounded,
+                            icon: Icons.calendar_today_outlined,
                             label: 'Waktu / Tenggat',
                             value: currentTask.timeString.isNotEmpty
                                 ? currentTask.timeString
@@ -138,63 +116,52 @@ class TaskDetailView extends GetView<TaskController> {
                           ),
                           const SizedBox(height: 14),
 
-                          // Location Row
+                          // Category Row
+                          _buildInfoRow(
+                            icon: Icons.folder_outlined,
+                            label: 'Kategori',
+                            value: currentTask.category,
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Priority Row
+                          _buildInfoRow(
+                            icon: Icons.flag_outlined,
+                            label: 'Prioritas',
+                            value: currentTask.priority,
+                          ),
+
                           if (currentTask.location.isNotEmpty) ...[
+                            const SizedBox(height: 14),
                             _buildInfoRow(
                               icon: Icons.location_on_outlined,
-                              label: 'Lokasi / Ruang',
+                              label: 'Lokasi',
                               value: currentTask.location,
                             ),
-                            const SizedBox(height: 14),
                           ],
-
-                          // Category & Priority
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildInfoRow(
-                                  icon: Icons.folder_outlined,
-                                  label: 'Kategori',
-                                  value: currentTask.category,
-                                ),
-                              ),
-                              Expanded(
-                                child: _buildInfoRow(
-                                  icon: Icons.flag_outlined,
-                                  label: 'Prioritas',
-                                  value: currentTask.priority,
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 16),
-
-                    // Notes Section
                     if (currentTask.note != null && currentTask.note!.isNotEmpty) ...[
+                      const SizedBox(height: 16),
                       Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(AppDimens.spaceXl),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(AppDimens.radiusCard),
-                          boxShadow: const [AppColors.cardShadow],
+                          boxShadow: const [AppShadows.standard],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Row(
+                            Row(
                               children: [
-                                Icon(Icons.notes_rounded, size: 18, color: AppColors.secondary),
-                                SizedBox(width: 8),
+                                const Icon(Icons.notes_rounded, size: 18, color: AppColors.secondary),
+                                const SizedBox(width: 8),
                                 Text(
-                                  'Catatan Tambahan',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
+                                  'Catatan',
+                                  style: AppTypography.fieldLabel.copyWith(
                                     color: AppColors.secondary,
                                   ),
                                 ),
@@ -203,8 +170,7 @@ class TaskDetailView extends GetView<TaskController> {
                             const SizedBox(height: 12),
                             Text(
                               currentTask.note!,
-                              style: const TextStyle(
-                                fontSize: 14,
+                              style: AppTypography.bodyDefault.copyWith(
                                 height: 1.5,
                                 color: AppColors.onSurface,
                               ),
@@ -217,22 +183,16 @@ class TaskDetailView extends GetView<TaskController> {
                 ),
               ),
 
-              // Bottom Action Buttons
+              // Bottom Sticky Action Bar
               Container(
                 padding: const EdgeInsets.all(AppDimens.margin),
                 decoration: const BoxDecoration(
                   color: AppColors.surface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color.fromRGBO(0, 0, 0, 0.05),
-                      blurRadius: 16,
-                      offset: Offset(0, -4),
-                    ),
-                  ],
+                  boxShadow: [AppShadows.stickyActionBar],
                 ),
                 child: Row(
                   children: [
-                    // Delete Button
+                    // Delete Button (Neutral monochrome, no red per standards)
                     Container(
                       width: 52,
                       height: 52,
@@ -241,7 +201,7 @@ class TaskDetailView extends GetView<TaskController> {
                         borderRadius: BorderRadius.circular(AppDimens.radiusFull),
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                        icon: const Icon(Icons.delete_outline, color: AppColors.primary),
                         onPressed: () {
                           controller.deleteTask(currentTask.id);
                           Get.back();
@@ -268,7 +228,7 @@ class TaskDetailView extends GetView<TaskController> {
                         ),
                         child: Text(
                           currentTask.isCompleted ? 'Tandai Belum Selesai' : 'Tandai Selesai',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                          style: AppTypography.buttonText.copyWith(color: AppColors.onPrimary),
                         ),
                       ),
                     ),
@@ -297,8 +257,7 @@ class TaskDetailView extends GetView<TaskController> {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 11,
+              style: AppTypography.captionMeta.copyWith(
                 fontWeight: FontWeight.w600,
                 color: AppColors.secondary,
               ),
@@ -306,8 +265,7 @@ class TaskDetailView extends GetView<TaskController> {
             const SizedBox(height: 2),
             Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
+              style: AppTypography.bodyDefault.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.primary,
               ),
@@ -318,4 +276,3 @@ class TaskDetailView extends GetView<TaskController> {
     );
   }
 }
-

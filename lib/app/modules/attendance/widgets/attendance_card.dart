@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../../core/theme/app_typography.dart';
 import '../../../data/models/attendance_model.dart';
 import '../attendance_controller.dart';
 
@@ -86,27 +87,60 @@ class AttendanceCard extends GetView<AttendanceController> {
                   const SizedBox(width: 8),
 
                   PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert_rounded, size: 20, color: AppColors.secondary),
+                    tooltip: 'Menu opsi',
+                    position: PopupMenuPosition.under,
+                    offset: const Offset(0, 8),
+                    elevation: 8,
+                    shadowColor: Colors.black.withValues(alpha: 0.14),
+                    surfaceTintColor: Colors.transparent,
+                    color: AppColors.surface,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppDimens.radiusInput),
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: AppColors.divider.withValues(alpha: 0.8),
+                        width: 1,
+                      ),
                     ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 150),
                     onSelected: (val) {
                       if (val == 'delete') {
                         controller.deleteAttendance(attendance.id);
                       }
                     },
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
+                        height: 44,
                         child: Row(
                           children: [
-                            Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
-                            SizedBox(width: 8),
-                            Text('Hapus Jadwal', style: TextStyle(color: AppColors.error, fontSize: 13, fontWeight: FontWeight.w600)),
+                            const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Hapus Jadwal',
+                              style: AppTypography.bodyDefault.copyWith(
+                                color: AppColors.error,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ],
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: AppColors.fill1,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.more_vert_rounded,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ),
                 ],
               ),

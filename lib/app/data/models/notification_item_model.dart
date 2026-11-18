@@ -64,7 +64,7 @@ class NotificationItemModel {
       title: map['title']?.toString() ?? '',
       message: map['message']?.toString() ?? '',
       timestamp: map['timestamp'] != null
-          ? DateTime.parse(map['timestamp'].toString())
+          ? (DateTime.tryParse(map['timestamp'].toString()) ?? DateTime.now())
           : DateTime.now(),
       isRead: map['isRead'] == true,
       type: map['type']?.toString() ?? 'TUGAS',
@@ -83,12 +83,16 @@ class NotificationItemModelAdapter extends TypeAdapter<NotificationItemModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return NotificationItemModel(
-      id: fields[0] as String,
-      title: fields[1] as String,
-      message: fields[2] as String,
-      timestamp: fields[3] as DateTime,
-      isRead: fields[4] as bool,
-      type: fields[5] as String,
+      id: fields[0]?.toString() ?? '',
+      title: fields[1]?.toString() ?? '',
+      message: fields[2]?.toString() ?? '',
+      timestamp: fields[3] is DateTime
+          ? fields[3] as DateTime
+          : (fields[3] != null
+              ? (DateTime.tryParse(fields[3].toString()) ?? DateTime.now())
+              : DateTime.now()),
+      isRead: fields[4] == true,
+      type: fields[5]?.toString() ?? 'TUGAS',
     );
   }
 

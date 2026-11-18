@@ -1,53 +1,36 @@
 import 'package:flutter/material.dart';
+import 'app_shadows.dart';
 
+/// Design tokens for colors based on Google Stitch TaskFlow Design System.
+/// Acuan: design/DESIGN.md
 class AppColors {
   AppColors._();
 
-  // Primary Monochromatic Inks
-  static const Color primary = Color(0xFF0A0A0A);
+  // Core roles
+  static const Color primary = Color(0xFF000000); // Ink / text-1
   static const Color onPrimary = Color(0xFFFFFFFF);
-  
-  // Canvas & Surfaces
-  static const Color background = Color(0xFFF6F6F7);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color onSurface = Color(0xFF1A1C1D);
+  static const Color onSurface = Color(0xFF1A1C1D); // Body text
+  static const Color secondary = Color(0xFF5E5E65); // Text-2
+  static const Color outline = Color(0xFF747878); // Text-3, placeholders, inactive tabs
+  static const Color background = Color(0xFFF9F9FA); // Canvas
+  static const Color surface = Color(0xFFFFFFFF); // Surface
+  static const Color fill1 = Color(0xFFEFEFF1); // Fill-1
+  static const Color statLight = Color(0xFFEDEDEF); // Stat light
+  static const Color statDark = Color(0xFFE2E2E5); // Stat dark
+  static const Color divider = Color(0xFFECECEE); // 1px separators
+  static const Color surfaceContainerHigh = Color(0xFFE8E8E9); // Checkbox idle
+  static const Color outlineVariant = Color(0xFFC4C7C7); // Separator dot "•"
 
-  // Grey Tonalities
-  static const Color secondary = Color(0xFF6F6F76);
-  static const Color tertiary = Color(0xFFA8A8AE);
-  static const Color outline = Color(0xFF747878);
-  static const Color outlineVariant = Color(0xFFC4C7C7);
-  static const Color divider = Color(0xFFECECEE);
+  // Scrim: #0A0A0A at 40%
+  static const Color scrim = Color(0x660A0A0A);
 
-  // Surface Fills
-  static const Color fill1 = Color(0xFFEFEFF1);
-  static const Color statLight = Color(0xFFEDEDEF);
-  static const Color statDark = Color(0xFFE2E2E5);
-
-  // Functional / Alert
+  // Material-style semantic tokens (not used visually for UI states per DESIGN.md)
   static const Color error = Color(0xFFBA1A1A);
   static const Color onError = Color(0xFFFFFFFF);
 
-  // Shadows
-  static const BoxShadow cardShadow = BoxShadow(
-    color: Color.fromRGBO(0, 0, 0, 0.06),
-    blurRadius: 24,
-    offset: Offset(0, 8),
-    spreadRadius: 0,
-  );
-
-  static const BoxShadow popoverShadow = BoxShadow(
-    color: Color.fromRGBO(0, 0, 0, 0.12),
-    blurRadius: 32,
-    offset: Offset(0, 12),
-    spreadRadius: 0,
-  );
-
-  static const BoxShadow floatingShadow = BoxShadow(
-    color: Color.fromRGBO(0, 0, 0, 0.08),
-    blurRadius: 24,
-    offset: Offset(0, 8),
-    spreadRadius: 0,
-  );
+  // Backward compatibility aliases
+  static const Color tertiary = outline;
+  static const BoxShadow cardShadow = AppShadows.standard;
+  static const BoxShadow popoverShadow = AppShadows.popover;
+  static const BoxShadow floatingShadow = AppShadows.standard;
 }
-

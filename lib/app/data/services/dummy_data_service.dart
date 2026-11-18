@@ -47,7 +47,7 @@ class DummyDataService {
         dateTime: now.add(const Duration(days: 2)),
         timeString: 'Jumat, 16:30',
         location: 'Gym Kampus',
-        category: 'Kesehatan',
+        category: 'Lainnya',
         priority: '= Sedang',
         isCompleted: false,
       ),
