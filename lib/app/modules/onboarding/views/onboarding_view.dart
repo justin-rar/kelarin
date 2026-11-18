@@ -97,9 +97,9 @@ class OnboardingView extends GetView<OnboardingController> {
 
           const SizedBox(height: 28),
 
-          // Section 1: Profil Mahasiswa
+          // Section 1: Data Pribadi
           Text(
-            'DATA PRIBADI MAHASISWA',
+            'DATA PRIBADI',
             style: AppTypography.fieldLabel.copyWith(
               color: AppColors.secondary,
               letterSpacing: 1.1,
@@ -107,48 +107,19 @@ class OnboardingView extends GetView<OnboardingController> {
           ),
           const SizedBox(height: 10),
 
-          // Field: Nama Lengkap
+          // Field: Nama Lengkap *
           _buildField(
             label: 'Nama Lengkap *',
-            icon: Icons.person_outline,
+            icon: Icons.person_outline_rounded,
             controller: controller.nameController,
             placeholder: 'Masukkan nama lengkap',
-          ),
-          const SizedBox(height: 14),
-
-          // Field: NIM
-          _buildField(
-            label: 'Nomor Induk Mahasiswa (NIM) *',
-            icon: Icons.badge_outlined,
-            controller: controller.nimController,
-            placeholder: 'Contoh: 123220001',
-            keyboardType: TextInputType.number,
-          ),
-          const SizedBox(height: 14),
-
-          // Field: Email
-          _buildField(
-            label: 'Email Kampus *',
-            icon: Icons.mail_outline,
-            controller: controller.emailController,
-            placeholder: 'nama@student.upnyk.ac.id',
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 14),
-
-          // Field: Program Studi
-          _buildField(
-            label: 'Program Studi',
-            icon: Icons.school_outlined,
-            controller: controller.majorController,
-            placeholder: 'Sistem Informasi / Informatika',
           ),
 
           const SizedBox(height: 24),
 
-          // Section 2: Pertanyaan Keamanan untuk Lupa PIN
+          // Section 2: Pemulihan Kunci Keamanan
           Text(
-            'PEMULIHAN KUNCI KEAMANAN (LUPA PIN)',
+            'PEMULIHAN KUNCI KEAMANAN',
             style: AppTypography.fieldLabel.copyWith(
               color: AppColors.secondary,
               letterSpacing: 1.1,
@@ -156,69 +127,127 @@ class OnboardingView extends GetView<OnboardingController> {
           ),
           const SizedBox(height: 10),
 
-          // Dropdown Pertanyaan
+          // Dropdown Pertanyaan Keamanan (Dropdown kebawah)
           Text(
-            'Pilih Pertanyaan Keamanan *',
-            style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
+            'Pertanyaan Keamanan *',
+            style: AppTypography.fieldLabel.copyWith(
+              color: AppColors.secondary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 6),
-          Container(
-            height: 52,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppDimens.radius2Xl),
-              boxShadow: const [AppShadows.field],
+          Theme(
+            data: Theme.of(context).copyWith(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
             ),
-            child: Row(
-              children: [
-                const Icon(Icons.help_outline, size: 20, color: AppColors.secondary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      value: controller.selectedSecurityQuestion.value,
-                      items: controller.securityQuestions.map((q) {
-                        return DropdownMenuItem(
-                          value: q,
+            child: Obx(
+              () => PopupMenuButton<String>(
+                position: PopupMenuPosition.under,
+                offset: const Offset(0, 6),
+                color: AppColors.surface,
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+                  side: BorderSide(
+                    color: AppColors.divider.withValues(alpha: 0.6),
+                    width: 1,
+                  ),
+                ),
+                onSelected: (val) {
+                  controller.selectedSecurityQuestion.value = val;
+                },
+                itemBuilder: (context) => controller.securityQuestions.map((q) {
+                  final isSelected = q == controller.selectedSecurityQuestion.value;
+                  return PopupMenuItem<String>(
+                    value: q,
+                    height: 44,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
                           child: Text(
                             q,
                             style: AppTypography.bodyDefault.copyWith(
-                              color: AppColors.onSurface,
-                              fontWeight: FontWeight.w500,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.onSurface,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
                               fontSize: 13,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          controller.selectedSecurityQuestion.value = val;
-                        }
-                      },
+                        ),
+                        if (isSelected)
+                          const Icon(
+                            Icons.check_rounded,
+                            size: 18,
+                            color: AppColors.primary,
+                          ),
+                      ],
                     ),
+                  );
+                }).toList(),
+                child: Container(
+                  height: 52,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(AppDimens.radius2Xl),
+                    boxShadow: const [AppShadows.field],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.help_outline_rounded,
+                        size: 20,
+                        color: AppColors.secondary,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          controller.selectedSecurityQuestion.value,
+                          style: AppTypography.bodyDefault.copyWith(
+                            color: AppColors.onSurface,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 20,
+                        color: AppColors.secondary,
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
 
-          // Field Jawaban Keamanan
-          _buildField(
-            label: 'Jawaban Keamanan *',
-            icon: Icons.verified_user_outlined,
-            controller: controller.securityAnswerController,
-            placeholder: 'Masukkan jawaban keamanan',
+          // Field: Informasi Pribadi (Pemulihan PIN) *
+          Obx(
+            () => _buildSecureField(
+              label: 'Informasi Pribadi (Pemulihan PIN) *',
+              icon: Icons.lock_outline_rounded,
+              controller: controller.securityAnswerController,
+              placeholder: 'Masukkan informasi rahasia...',
+              isObscured: controller.obscureSecurityAnswer.value,
+              onToggleObscure: controller.toggleObscureSecurityAnswer,
+            ),
           ),
 
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Text(
-              'Informasi ini akan diminta jika Anda lupa PIN keamanan saat ingin membuka aplikasi.',
+              'Informasi pribadi ini digunakan untuk memverifikasi identitas Anda saat lupa PIN.',
               style: AppTypography.captionMeta.copyWith(
                 color: AppColors.secondary,
                 fontSize: 11,
@@ -308,6 +337,77 @@ class OnboardingView extends GetView<OnboardingController> {
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSecureField({
+    required String label,
+    required IconData icon,
+    required TextEditingController controller,
+    required String placeholder,
+    required bool isObscured,
+    required VoidCallback onToggleObscure,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTypography.fieldLabel.copyWith(
+            color: AppColors.secondary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppDimens.radius2Xl),
+            boxShadow: const [AppShadows.field],
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: AppColors.secondary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  obscureText: isObscured,
+                  style: AppTypography.bodyDefault.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: placeholder,
+                    hintStyle: AppTypography.bodyDefault.copyWith(
+                      color: AppColors.outlineVariant,
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: onToggleObscure,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  child: Icon(
+                    isObscured
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 20,
+                    color: AppColors.secondary,
                   ),
                 ),
               ),

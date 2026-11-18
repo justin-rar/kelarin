@@ -12,17 +12,19 @@ class OnboardingController extends GetxController {
   final RxInt currentStep = 0.obs;
 
   final nameController = TextEditingController();
-  final nimController = TextEditingController();
-  final emailController = TextEditingController();
-  final majorController = TextEditingController(text: 'Sistem Informasi');
   final securityAnswerController = TextEditingController();
+
+  final RxBool obscureSecurityAnswer = true.obs;
+  void toggleObscureSecurityAnswer() {
+    obscureSecurityAnswer.value = !obscureSecurityAnswer.value;
+  }
 
   final RxString selectedSecurityQuestion = 'Nama Ibu Kandung'.obs;
   final List<String> securityQuestions = [
     'Nama Ibu Kandung',
-    'Kota Kelahiran',
-    'Sekolah Menengah Pertama (SMP)',
     'Nama Hewan Peliharaan Pertama',
+    'Kota Tempat Lahir',
+    'Sekolah Dasar Pertama',
   ];
 
   final RxString enteredPin = ''.obs;
@@ -32,26 +34,24 @@ class OnboardingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Default initial suggestions if already present
     nameController.text = _storage.userName.isNotEmpty ? _storage.userName : '';
-    nimController.text = _storage.userNim.isNotEmpty ? _storage.userNim : '';
-    emailController.text = _storage.userEmail.isNotEmpty ? _storage.userEmail : '';
+    securityAnswerController.text =
+        _storage.securityAnswer.isNotEmpty ? _storage.securityAnswer : '';
+    if (_storage.securityQuestion.isNotEmpty &&
+        securityQuestions.contains(_storage.securityQuestion)) {
+      selectedSecurityQuestion.value = _storage.securityQuestion;
+    }
   }
 
   @override
   void onClose() {
     nameController.dispose();
-    nimController.dispose();
-    emailController.dispose();
-    majorController.dispose();
     securityAnswerController.dispose();
     super.onClose();
   }
 
   void proceedToPinSetup() {
     final name = nameController.text.trim();
-    final nim = nimController.text.trim();
-    final email = emailController.text.trim();
     final answer = securityAnswerController.text.trim();
 
     if (name.isEmpty) {
@@ -61,23 +61,9 @@ class OnboardingController extends GetxController {
       );
       return;
     }
-    if (nim.isEmpty) {
-      Get.rawSnackbar(
-        message: 'Mohon isi NIM Anda (digunakan untuk pemulihan PIN)',
-        snackPosition: SnackPosition.TOP,
-      );
-      return;
-    }
-    if (email.isEmpty) {
-      Get.rawSnackbar(
-        message: 'Mohon isi email Anda (digunakan untuk pemulihan PIN)',
-        snackPosition: SnackPosition.TOP,
-      );
-      return;
-    }
     if (answer.isEmpty) {
       Get.rawSnackbar(
-        message: 'Mohon isi jawaban pertanyaan keamanan pemulihan PIN',
+        message: 'Mohon isi jawaban keamanan untuk pemulihan PIN',
         snackPosition: SnackPosition.TOP,
       );
       return;
@@ -135,12 +121,16 @@ class OnboardingController extends GetxController {
         // Save profile
         await _storage.setProfile(
           name: nameController.text.trim(),
-          nim: nimController.text.trim(),
-          email: emailController.text.trim(),
-          major: majorController.text.trim().isNotEmpty
-              ? majorController.text.trim()
+          nim: _storage.userNim.isNotEmpty ? _storage.userNim : '123220001',
+          email: _storage.userEmail.isNotEmpty
+              ? _storage.userEmail
+              : 'titut.student@upnyk.ac.id',
+          major: _storage.userMajor.isNotEmpty
+              ? _storage.userMajor
               : 'Sistem Informasi',
-          semester: 'Semester 5',
+          semester: _storage.userSemester.isNotEmpty
+              ? _storage.userSemester
+              : 'Semester 5',
         );
 
         // Save security info

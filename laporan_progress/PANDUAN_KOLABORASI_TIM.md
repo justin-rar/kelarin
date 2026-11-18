@@ -25,6 +25,8 @@ Proyek ini menggunakan standar **Google Stitch Monochrome Minimalist Soft-Card S
    - Jangan menjadikannya ikon polos transparan karena akan terlihat menyatu mentah dengan latar kartu.
 5. **DILARANG membuat kartu pengingat mepet pinggir:**
    - Komponen `ToggleRow` pada form tugas dan absen wajib memiliki `padding: horizontal 16 px` internal dan kontainer kartunya memiliki `padding: vertical 8 px`.
+6. **DILARANG menambah field mahasiswa di form awal profil:**
+   - Form awal setup hanya mencakup section **DATA PRIBADI** (hanya `Nama Lengkap *`) dan **PEMULIHAN KUNCI KEAMANAN** (dropdown pertanyaan ke arah bawah + jawaban keamanan), selaras dengan halaman Edit Profil. Jangan menambahkan input NIM, email kampus, atau jurusan di form awal ini.
 
 ### ✅ HAL-HAL YANG HARUS DILAKUKAN (DO'S):
 1. Selalu gunakan token warna dari `AppColors`:

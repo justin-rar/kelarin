@@ -229,38 +229,93 @@ class _EditProfileViewState extends State<EditProfileView> {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(AppDimens.radius2Xl),
-                            boxShadow: const [AppShadows.field],
+                        Theme(
+                          data: Theme.of(context).copyWith(
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
                           ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: selectedSecurityQuestion,
-                              isExpanded: true,
-                              icon: const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: AppColors.secondary,
+                          child: PopupMenuButton<String>(
+                            position: PopupMenuPosition.under,
+                            offset: const Offset(0, 6),
+                            color: AppColors.surface,
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(AppDimens.radiusCard),
+                              side: BorderSide(
+                                color: AppColors.divider.withValues(alpha: 0.6),
+                                width: 1,
                               ),
-                              items: _securityQuestions.map((q) {
-                                return DropdownMenuItem(
-                                  value: q,
-                                  child: Text(
-                                    q,
-                                    style: AppTypography.bodyDefault.copyWith(
-                                      color: AppColors.onSurface,
-                                      fontWeight: FontWeight.w600,
+                            ),
+                            onSelected: (val) {
+                              setState(() => selectedSecurityQuestion = val);
+                            },
+                            itemBuilder: (context) => _securityQuestions.map((q) {
+                              final isSelected = q == selectedSecurityQuestion;
+                              return PopupMenuItem<String>(
+                                value: q,
+                                height: 44,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        q,
+                                        style:
+                                            AppTypography.bodyDefault.copyWith(
+                                          color: isSelected
+                                              ? AppColors.primary
+                                              : AppColors.onSurface,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w700
+                                              : FontWeight.w500,
+                                          fontSize: 13,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      const Icon(
+                                        Icons.check_rounded,
+                                        size: 18,
+                                        color: AppColors.primary,
+                                      ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                            child: Container(
+                              height: 52,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius:
+                                    BorderRadius.circular(AppDimens.radius2Xl),
+                                boxShadow: const [AppShadows.field],
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      selectedSecurityQuestion,
+                                      style:
+                                          AppTypography.bodyDefault.copyWith(
+                                        color: AppColors.onSurface,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                );
-                              }).toList(),
-                              onChanged: (val) {
-                                if (val != null) {
-                                  setState(() => selectedSecurityQuestion = val);
-                                }
-                              },
+                                  const Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 20,
+                                    color: AppColors.secondary,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),

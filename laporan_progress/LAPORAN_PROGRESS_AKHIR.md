@@ -23,15 +23,20 @@ Aplikasi **TaskFlow Mobile (Kelarin)** telah mencapai status fungsional penuh (*
 
 ## 2. Status Implementasi Fitur
 
-### A. Modul Otentikasi & Keamanan (PIN Protection)
+### A. Modul Otentikasi & Keamanan (PIN Protection & Onboarding)
+- [x] **Form Awal Data Pribadi & Pemulihan (Setup Awal)**:
+  - Section **DATA PRIBADI**: Hanya mencakup *Nama Lengkap \** (selaras dengan halaman Edit Profil, tanpa meminta data kampus/NIM/Email di form awal).
+  - Section **PEMULIHAN KUNCI KEAMANAN**:
+    - Dropdown *Pertanyaan Keamanan \** yang membuka ke arah bawah (`PopupMenuPosition.under`) dengan border radius 16 px dan bayangan lembut.
+    - Field *Informasi Pribadi (Pemulihan PIN) \** dengan fitur sembunyikan/tampilkan password (*obscure toggle*).
 - [x] **Keypad Numerik Lokal Monokrom**: Keypad kustom 4-digit dengan umpan balik visual (*dot indicator* aktif/kosong).
 - [x] **Alur Fleksibel**:
   - Validasi PIN saat aplikasi dibuka (Splash screen check).
-  - Setup PIN baru bagi pengguna pertama kali.
+  - Setup PIN baru bagi pengguna pertama kali setelah mengisi nama dan pemulihan keamanan.
   - Ubah PIN lama dengan verifikasi PIN sebelumnya.
   - Nonaktifkan PIN melalui dialog konfirmasi aman.
 - [x] **Riwayat PIN (Anti-Reuse)**: Mencegah pengguna menggunakan kembali PIN yang pernah dipakai sebelumnya.
-- [x] **Lupa PIN & Pemulihan Akun**: Verifikasi identitas akademik (NIM, Email, atau Pertanyaan Keamanan Ibu Kandung) sebelum mengizinkan setel ulang PIN.
+- [x] **Lupa PIN & Pemulihan Akun**: Verifikasi identitas melalui jawaban keamanan terdaftar sebelum mengizinkan setel ulang PIN.
 
 ### B. Modul Navigasi Utama (Main Navigation)
 - [x] **Floating Bottom Navigation Bar**:

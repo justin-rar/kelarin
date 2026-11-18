@@ -374,9 +374,9 @@ class PinController extends GetxController {
                     final bool isNimMatch = enteredNim == registeredNim;
                     final bool isEmailMatch = enteredEmail == registeredEmail;
                     final bool isAnswerMatch =
-                        registeredAnswer.isEmpty || enteredAnswer == registeredAnswer;
+                        registeredAnswer.isNotEmpty && enteredAnswer == registeredAnswer;
 
-                    if (isNimMatch && (isEmailMatch || isAnswerMatch)) {
+                    if (isAnswerMatch || (isNimMatch && isEmailMatch)) {
                       Get.back(); // close sheet
                       // Switch PinController to Reset Setup mode
                       isForgotPinReset = true;
