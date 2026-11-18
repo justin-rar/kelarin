@@ -98,6 +98,16 @@ class _AppHeaderState extends State<AppHeader> {
                                   width: 44,
                                   height: 44,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Center(
+                                    child: Text(
+                                      initialLetter,
+                                      style: AppTypography.cardTitle.copyWith(
+                                        color: AppColors.onPrimary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               )
                             : Center(

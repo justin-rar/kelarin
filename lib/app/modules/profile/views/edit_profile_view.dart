@@ -123,9 +123,14 @@ class _EditProfileViewState extends State<EditProfileView> {
                           children: [
                             Obx(() {
                               final imagePath = controller.profileImagePath.value;
-                              final hasImage = imagePath != null &&
-                                  imagePath.isNotEmpty &&
-                                  File(imagePath).existsSync();
+                              bool hasImage = false;
+                              if (imagePath != null && imagePath.isNotEmpty) {
+                                try {
+                                  hasImage = File(imagePath).existsSync();
+                                } catch (_) {
+                                  hasImage = false;
+                                }
+                              }
                               final initialLetter = nameController.text.isNotEmpty
                                   ? nameController.text[0].toUpperCase()
                                   : 'T';
@@ -141,10 +146,22 @@ class _EditProfileViewState extends State<EditProfileView> {
                                 child: hasImage
                                     ? ClipOval(
                                         child: Image.file(
-                                          File(imagePath),
+                                          File(imagePath!),
                                           width: 96,
                                           height: 96,
                                           fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Center(
+                                            child: Text(
+                                              initialLetter,
+                                              style: AppTypography.splashTitle
+                                                  .copyWith(
+                                                color: AppColors.onPrimary,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       )
                                     : Center(

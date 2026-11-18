@@ -101,9 +101,14 @@ class _ProfileViewState extends State<ProfileView> {
                               onTap: () => controller.showAvatarPickerSheet(context),
                               child: Obx(() {
                                 final imagePath = controller.profileImagePath.value;
-                                final hasImage = imagePath != null &&
-                                    imagePath.isNotEmpty &&
-                                    File(imagePath).existsSync();
+                                bool hasImage = false;
+                                if (imagePath != null && imagePath.isNotEmpty) {
+                                  try {
+                                    hasImage = File(imagePath).existsSync();
+                                  } catch (_) {
+                                    hasImage = false;
+                                  }
+                                }
 
                                 return Container(
                                   width: 96,
@@ -116,10 +121,24 @@ class _ProfileViewState extends State<ProfileView> {
                                   child: hasImage
                                       ? ClipOval(
                                           child: Image.file(
-                                            File(imagePath),
+                                            File(imagePath!),
                                             width: 96,
                                             height: 96,
                                             fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    Center(
+                                              child: Text(
+                                                initial,
+                                                style: AppTypography.headlineH1
+                                                    .copyWith(
+                                                  fontSize: 40,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: AppColors.onPrimary,
+                                                  height: 1.0,
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         )
                                       : Center(

@@ -73,19 +73,39 @@ class ProfileController extends GetxController {
   Future<void> pickProfileImage(ImageSource source) async {
     try {
       final picker = ImagePicker();
-      final picked = await picker.pickImage(
-        source: source,
-        maxWidth: 800,
-        maxHeight: 800,
-        imageQuality: 85,
-      );
+      XFile? picked;
+      try {
+        picked = await picker.pickImage(
+          source: source,
+          maxWidth: 800,
+          maxHeight: 800,
+          imageQuality: 85,
+        );
+      } catch (innerError) {
+        // If camera is unsupported or denied (e.g. on emulator/desktop), fallback to gallery
+        if (source == ImageSource.camera) {
+          picked = await picker.pickImage(
+            source: ImageSource.gallery,
+            maxWidth: 800,
+            maxHeight: 800,
+            imageQuality: 85,
+          );
+        } else {
+          rethrow;
+        }
+      }
+
       if (picked != null) {
         profileImagePath.value = picked.path;
         await _storage.setProfileImagePath(picked.path);
         UndoToast.show(message: 'Foto profil berhasil diperbarui');
       }
-    } catch (_) {
-      UndoToast.show(message: 'Gagal memilih foto profil');
+    } catch (e) {
+      Get.rawSnackbar(
+        message: 'Gagal memilih foto: ${e.toString()}',
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 3),
+      );
     }
   }
 
