@@ -157,9 +157,9 @@ class PinView extends GetView<PinController> {
                 );
               }),
 
-              // "Lupa PIN?" button (Shown in Auth mode)
+              // "Lupa PIN?" button
               Obx(() {
-                if (!controller.isAuthMode || controller.isForgotPinReset) {
+                if (!controller.canShowForgotPin) {
                   return const SizedBox(height: 12);
                 }
                 return Padding(

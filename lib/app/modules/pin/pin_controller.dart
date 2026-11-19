@@ -64,6 +64,16 @@ class PinController extends GetxController {
 
   bool get isAuthMode => flowMode.value == PinFlowMode.auth;
 
+  bool get canShowForgotPin {
+    if (isForgotPinReset) return false;
+    if (flowMode.value == PinFlowMode.auth) return true;
+    if (flowMode.value == PinFlowMode.disableConfirm) return true;
+    if (flowMode.value == PinFlowMode.change && currentStep.value == PinStep.enterCurrent) {
+      return true;
+    }
+    return false;
+  }
+
   String get screenTitle {
     switch (flowMode.value) {
       case PinFlowMode.auth:
@@ -319,16 +329,43 @@ class PinController extends GetxController {
                       borderRadius: BorderRadius.circular(AppDimens.radiusFull),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     final enteredAnswer = securityInput.text.trim().toLowerCase();
                     final registeredAnswer = _storage.securityAnswer.trim().toLowerCase();
 
-                    final bool isAnswerMatch =
-                        registeredAnswer.isNotEmpty && enteredAnswer == registeredAnswer;
+                    if (registeredAnswer.isEmpty) {
+                      modalError.value =
+                          'Pertanyaan keamanan belum pernah diatur pada profil ini.';
+                      return;
+                    }
+
+                    final bool isAnswerMatch = enteredAnswer == registeredAnswer;
 
                     if (isAnswerMatch) {
                       Get.back(); // close sheet
-                      // Switch PinController to Reset Setup mode
+
+                      // 1. Jika sedang dalam mode matikan PIN (disableConfirm)
+                      if (flowMode.value == PinFlowMode.disableConfirm) {
+                        await _storage.setPinEnabled(false);
+                        Get.back(result: true); // close PIN view
+                        UndoToast.show(message: 'Identitas terverifikasi. Kunci PIN dinonaktifkan.');
+                        return;
+                      }
+
+                      // 2. Jika sedang dalam mode ubah PIN (change)
+                      if (flowMode.value == PinFlowMode.change) {
+                        currentStep.value = PinStep.enterNew;
+                        enteredPin.value = '';
+                        errorMessage.value = '';
+                        Get.rawSnackbar(
+                          message: 'Identitas terverifikasi! Silakan masukkan PIN baru Anda.',
+                          snackPosition: SnackPosition.TOP,
+                          duration: const Duration(seconds: 3),
+                        );
+                        return;
+                      }
+
+                      // 3. Auth mode (buka aplikasi dari login/splash)
                       isForgotPinReset = true;
                       flowMode.value = PinFlowMode.setup;
                       currentStep.value = PinStep.enterNew;
@@ -345,7 +382,11 @@ class PinController extends GetxController {
                     }
                   },
                   child: Text(
-                    'Verifikasi & Atur Ulang PIN',
+                    flowMode.value == PinFlowMode.disableConfirm
+                        ? 'Verifikasi & Matikan PIN'
+                        : (flowMode.value == PinFlowMode.change
+                            ? 'Verifikasi & Masukkan PIN Baru'
+                            : 'Verifikasi & Atur Ulang PIN'),
                     style: AppTypography.buttonText.copyWith(color: AppColors.onPrimary),
                   ),
                 ),
