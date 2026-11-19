@@ -14,6 +14,13 @@ class AttendanceController extends GetxController {
     loadAttendances();
   }
 
+  @override
+  void onReady() {
+    super.onReady();
+    // Reload ulang setiap kali controller siap (misalnya setelah kembali dari halaman add)
+    loadAttendances();
+  }
+
   void loadAttendances() {
     attendances.assignAll(_storage.attendanceBox.values.toList());
   }

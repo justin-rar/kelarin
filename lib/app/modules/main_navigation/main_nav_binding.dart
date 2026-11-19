@@ -12,7 +12,7 @@ class MainNavBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<MainNavController>(() => MainNavController(), fenix: true);
     Get.lazyPut<TaskController>(() => TaskController(), fenix: true);
-    Get.lazyPut<AttendanceController>(() => AttendanceController(), fenix: true);
+    Get.put<AttendanceController>(AttendanceController(), permanent: true);
     Get.lazyPut<NoteController>(() => NoteController(), fenix: true);
     Get.lazyPut<ProfileController>(() => ProfileController(), fenix: true);
     Get.lazyPut<AiController>(() => AiController(), fenix: true);
