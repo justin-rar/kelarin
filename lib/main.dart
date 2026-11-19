@@ -6,6 +6,15 @@ import 'app/data/services/notification_service.dart';
 import 'app/data/services/storage_service.dart';
 import 'app/routes/app_pages.dart';
 
+/// Menonaktifkan efek stretch/glow saat overscroll di seluruh aplikasi
+class _NoStretchScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    return child; // tidak tampilkan indikator overscroll sama sekali
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -34,6 +43,7 @@ class KelarinApp extends StatelessWidget {
       initialRoute: AppPages.initial,
       getPages: AppPages.routes,
       defaultTransition: Transition.fadeIn,
+      scrollBehavior: _NoStretchScrollBehavior(),
     );
   }
 }
