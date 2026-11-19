@@ -46,7 +46,17 @@ class StorageService extends GetxService {
     // 4. Initialize SharedPreferences
     _prefs = await SharedPreferences.getInstance();
 
-    // 5. Seed initial data HANYA jika belum pernah setup profil (state awal kosong)
+    // 5. Bersihkan residu data dummy lama agar state aplikasi benar-benar kosong murni
+    final isLegacyCleared = _prefs.getBool('is_legacy_dummy_cleared_v2') ?? false;
+    if (!isLegacyCleared) {
+      await _taskBox.clear();
+      await _attendanceBox.clear();
+      await _noteBox.clear();
+      await _notificationBox.clear();
+      await _prefs.setBool('is_legacy_dummy_cleared_v2', true);
+    }
+
+    // 6. Setup state awal jika belum pernah dibuka
     final isInitialized = _prefs.getBool('is_app_initialized') ?? false;
     if (!isInitialized) {
       await _seedInitialData();

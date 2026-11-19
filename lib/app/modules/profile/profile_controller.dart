@@ -325,4 +325,21 @@ class ProfileController extends GetxController {
     loadProfile();
     UndoToast.show(message: 'Seluruh data lokal berhasil dibersihkan');
   }
+
+  Future<void> logoutAndReset() async {
+    await _storage.taskBox.clear();
+    await _storage.attendanceBox.clear();
+    await _storage.noteBox.clear();
+    await _storage.notificationBox.clear();
+    await _storage.prefs.setBool('is_profile_setup_done', false);
+    await _storage.prefs.setBool('is_pin_enabled', false);
+    await _storage.prefs.setString('app_pin', '');
+    await _storage.prefs.setString('user_name', '');
+    await _storage.prefs.setString('user_nim', '');
+    await _storage.prefs.setString('user_email', '');
+    await _storage.prefs.setString('user_major', '');
+    await _storage.prefs.setString('user_semester', '');
+    await _storage.prefs.remove('profile_image_path');
+    loadProfile();
+  }
 }

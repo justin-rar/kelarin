@@ -44,16 +44,34 @@ class _ProfileViewState extends State<ProfileView> {
   void _showLogoutDialog() {
     ConfirmationDialog.show(
       title: 'Keluar dari Akun',
-      message: 'Apakah kamu yakin ingin keluar dari akun ini di perangkat ini?',
+      message: 'Apakah kamu yakin ingin keluar dari akun ini? Akun dan data lokal akan direset untuk pengguna baru.',
       icon: Icons.logout_rounded,
       confirmText: 'Keluar',
       cancelText: 'Batal',
-      onConfirm: () {
+      isDestructive: true,
+      onConfirm: () async {
         Get.back();
+        await controller.logoutAndReset();
+        Get.offAllNamed(AppRoutes.onboarding);
         Get.rawSnackbar(
-          message: 'Sesi akun berhasil diakhiri',
+          message: 'Sesi akun diakhiri. Silakan daftarkan akun baru.',
           snackPosition: SnackPosition.TOP,
         );
+      },
+    );
+  }
+
+  void _showClearAllDataDialog() {
+    ConfirmationDialog.show(
+      title: 'Reset & Hapus Semua Data',
+      message: 'Semua daftar tugas, riwayat presensi, dan catatan akan dikosongkan. Tindakan ini tidak dapat dibatalkan.',
+      icon: Icons.delete_sweep_rounded,
+      confirmText: 'Reset Semua',
+      cancelText: 'Batal',
+      isDestructive: true,
+      onConfirm: () async {
+        Get.back();
+        await controller.clearAllData();
       },
     );
   }
@@ -300,6 +318,12 @@ class _ProfileViewState extends State<ProfileView> {
                           title: 'Bersihkan Tugas Selesai',
                           subtitle: 'Arsipkan atau hapus rekap tugas lama',
                           onTap: controller.clearCompletedTasks,
+                        ),
+                        SettingsRowItem(
+                          icon: Icons.delete_sweep_outlined,
+                          title: 'Reset & Hapus Semua Data',
+                          subtitle: 'Kosongkan seluruh tugas, presensi, & catatan',
+                          onTap: _showClearAllDataDialog,
                         ),
                         SettingsRowItem(
                           icon: Icons.info,

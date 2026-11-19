@@ -117,6 +117,12 @@ class OnboardingController extends GetxController {
     } else if (currentStep.value == 2) {
       // Step 2: Confirm PIN
       if (pin == temporaryNewPin.value) {
+        // Bersihkan seluruh data sebelumnya agar akun baru memiliki state kosong
+        await _storage.taskBox.clear();
+        await _storage.attendanceBox.clear();
+        await _storage.noteBox.clear();
+        await _storage.notificationBox.clear();
+
         // Save profile (hanya nama, field lain kosong saat awal)
         await _storage.setProfile(
           name: nameController.text.trim(),
