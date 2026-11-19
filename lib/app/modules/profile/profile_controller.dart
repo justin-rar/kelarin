@@ -235,13 +235,21 @@ class ProfileController extends GetxController {
   /// Toggle PIN Lock with full security checks
   Future<void> togglePinEnabled(bool enabled) async {
     if (enabled) {
-      // 1. Enable PIN: requires entering new PIN + 1x confirmation
-      final result = await Get.toNamed(
-        AppRoutes.pin,
-        arguments: {'mode': 'setup', 'isAuth': false},
-      );
-      if (result == true) {
+      final hasExistingPin = _storage.appPin.isNotEmpty;
+      if (hasExistingPin) {
+        // PIN sudah pernah dibuat sebelumnya → langsung aktifkan saja
+        await _storage.setPinEnabled(true);
         isPinEnabled.value = true;
+        UndoToast.show(message: 'Kunci PIN diaktifkan');
+      } else {
+        // Belum pernah set PIN sama sekali → setup PIN baru
+        final result = await Get.toNamed(
+          AppRoutes.pin,
+          arguments: {'mode': 'setup', 'isAuth': false},
+        );
+        if (result == true) {
+          isPinEnabled.value = true;
+        }
       }
     } else {
       // Nonaktifkan PIN: langsung minta konfirmasi PIN lama, tidak perlu dialog dulu
