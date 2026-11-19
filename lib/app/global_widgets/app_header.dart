@@ -7,6 +7,7 @@ import '../core/constants/app_dimens.dart';
 import '../core/constants/app_shadows.dart';
 import '../core/theme/app_typography.dart';
 import '../data/services/storage_service.dart';
+import '../modules/calendar/views/calendar_bottom_sheet.dart';
 import '../modules/notification/notification_controller.dart';
 import '../routes/app_routes.dart';
 
@@ -15,11 +16,13 @@ import '../routes/app_routes.dart';
 /// Acuan: design/DESIGN.md
 class AppHeader extends StatefulWidget {
   final VoidCallback? onNotificationTap;
+  final VoidCallback? onCalendarTap;
   final VoidCallback? onProfileTap;
 
   const AppHeader({
     super.key,
     this.onNotificationTap,
+    this.onCalendarTap,
     this.onProfileTap,
   });
 
@@ -30,6 +33,7 @@ class AppHeader extends StatefulWidget {
 class _AppHeaderState extends State<AppHeader> {
   bool _profilePressed = false;
   bool _notifPressed = false;
+  bool _calendarPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -215,6 +219,36 @@ class _AppHeaderState extends State<AppHeader> {
                             }),
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppDimens.gutter),
+
+                  // Calendar Button (Kalender & Tanggal Merah)
+                  GestureDetector(
+                    onTapDown: (_) => setState(() => _calendarPressed = true),
+                    onTapUp: (_) => setState(() => _calendarPressed = false),
+                    onTapCancel: () => setState(() => _calendarPressed = false),
+                    onTap: widget.onCalendarTap ??
+                        () => CalendarBottomSheet.show(context),
+                    child: AnimatedScale(
+                      scale: _calendarPressed ? 0.95 : 1.0,
+                      duration: const Duration(milliseconds: 100),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: const BoxDecoration(
+                          color: AppColors.surface,
+                          shape: BoxShape.circle,
+                          boxShadow: [AppShadows.standard],
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.calendar_month_outlined,
+                            size: 20,
+                            color: AppColors.onSurface,
+                          ),
+                        ),
                       ),
                     ),
                   ),
