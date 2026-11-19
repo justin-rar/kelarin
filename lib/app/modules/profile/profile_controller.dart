@@ -244,30 +244,15 @@ class ProfileController extends GetxController {
         isPinEnabled.value = true;
       }
     } else {
-      // 3. Disable PIN: requires user confirmation dialog AND inputting current PIN
-      _showDisablePinConfirmation();
+      // Nonaktifkan PIN: langsung minta konfirmasi PIN lama, tidak perlu dialog dulu
+      final result = await Get.toNamed(
+        AppRoutes.pin,
+        arguments: {'mode': 'disableConfirm'},
+      );
+      if (result == true) {
+        isPinEnabled.value = false;
+      }
     }
-  }
-
-  void _showDisablePinConfirmation() {
-    ConfirmationDialog.show(
-      title: 'Nonaktifkan Kunci PIN?',
-      message: 'Aplikasi tidak akan lagi meminta PIN saat dibuka. Untuk alasan keamanan, Anda harus mengonfirmasi PIN saat ini.',
-      icon: Icons.lock_open_rounded,
-      confirmText: 'Lanjutkan',
-      cancelText: 'Batal',
-      onConfirm: () async {
-        Get.back(); // close confirmation dialog
-        // Navigate to PIN verification to disable
-        final result = await Get.toNamed(
-          AppRoutes.pin,
-          arguments: {'mode': 'disableConfirm'},
-        );
-        if (result == true) {
-          isPinEnabled.value = false;
-        }
-      },
-    );
   }
 
   /// 2. Change PIN: requires old PIN -> new PIN (not in history) -> confirm new PIN

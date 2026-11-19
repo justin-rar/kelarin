@@ -46,12 +46,16 @@ class PinController extends GetxController {
     if (modeStr == 'change') {
       flowMode.value = PinFlowMode.change;
       currentStep.value = PinStep.enterCurrent;
-    } else if (modeStr == 'setup' || isAuth == false) {
-      flowMode.value = PinFlowMode.setup;
-      currentStep.value = PinStep.enterNew;
     } else if (modeStr == 'disableConfirm') {
       flowMode.value = PinFlowMode.disableConfirm;
       currentStep.value = PinStep.enterCurrent;
+    } else if (modeStr == 'setup') {
+      flowMode.value = PinFlowMode.setup;
+      currentStep.value = PinStep.enterNew;
+    } else if (isAuth == false) {
+      // Enable PIN dari profil (tanpa mode string)
+      flowMode.value = PinFlowMode.setup;
+      currentStep.value = PinStep.enterNew;
     } else {
       flowMode.value = PinFlowMode.auth;
       currentStep.value = PinStep.enterCurrent;
