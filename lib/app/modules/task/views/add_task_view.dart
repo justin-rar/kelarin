@@ -53,6 +53,24 @@ class _AddTaskViewState extends State<AddTaskView> {
     if (Get.isRegistered<NotificationService>()) {
       Get.find<NotificationService>().requestPermissions();
     }
+
+    final args = Get.arguments;
+    if (args is Map) {
+      if (args['initialTitle'] != null) {
+        titleController.text = args['initialTitle'].toString();
+      }
+      if (args['initialCategory'] != null &&
+          categories.contains(args['initialCategory'])) {
+        selectedCategory = args['initialCategory'].toString();
+      }
+      if (args['initialPriority'] != null &&
+          priorities.contains(args['initialPriority'])) {
+        selectedPriority = args['initialPriority'].toString();
+      }
+      if (args['initialDate'] is DateTime) {
+        selectedDate = args['initialDate'] as DateTime;
+      }
+    }
   }
 
   @override

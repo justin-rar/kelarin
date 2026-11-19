@@ -14,6 +14,8 @@ import '../../routes/app_routes.dart';
 import '../main_navigation/main_nav_controller.dart';
 import '../task/task_controller.dart';
 import '../task/widgets/task_card.dart';
+import '../calendar/calendar_controller.dart';
+import 'widgets/home_calendar_card.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -63,7 +65,12 @@ class _HomeViewState extends State<HomeView> {
             // Scrollable Content
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () async => controller.loadTasks(),
+                onRefresh: () async {
+                  controller.loadTasks();
+                  if (Get.isRegistered<CalendarController>()) {
+                    await Get.find<CalendarController>().loadHolidays();
+                  }
+                },
                 color: AppColors.primary,
                 child: ListView(
                   padding: const EdgeInsets.only(bottom: 120),
@@ -107,7 +114,13 @@ class _HomeViewState extends State<HomeView> {
                     ),
                     const SizedBox(height: 14),
 
-                    // 3. Search Bar (48px, 16px radius, standard shadow)
+                    // 3. Kalender Hari Libur Nasional & Kampus (Terintegrasi via REST API)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: AppDimens.margin),
+                      child: HomeCalendarCard(),
+                    ),
+
+                    // 4. Search Bar (48px, 16px radius, standard shadow)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: AppDimens.margin),
                       child: AppSearchBar(

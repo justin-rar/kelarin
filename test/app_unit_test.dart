@@ -4,6 +4,8 @@ import 'package:kelarin/app/data/models/attendance_model.dart';
 import 'package:kelarin/app/data/models/note_model.dart';
 import 'package:kelarin/app/data/models/notification_item_model.dart';
 import 'package:kelarin/app/data/models/task_model.dart';
+import 'package:kelarin/app/data/models/holiday_model.dart';
+import 'package:kelarin/app/data/services/calendar_service.dart';
 
 void main() {
   test('State awal aplikasi adalah kosong (tidak ada data bawaan)', () {
@@ -166,5 +168,32 @@ void main() {
     expect(reconstructed.day, 'Senin - Jumat');
     expect(reconstructed.room, 'Lab Komputer 3 (4A)');
     expect(reconstructed.scheduledEpoch, attendance.scheduledEpoch);
+  });
+
+  test('HolidayModel parses REST API response and formats Indonesian dates correctly', () {
+    final json = {
+      'date': '2026-12-25',
+      'localName': 'Hari Raya Natal',
+      'name': 'Christmas Day',
+      'countryCode': 'ID',
+      'global': true,
+    };
+
+    final holiday = HolidayModel.fromJson(json);
+    expect(holiday.date, '2026-12-25');
+    expect(holiday.localName, 'Hari Raya Natal');
+    expect(holiday.name, 'Christmas Day');
+    expect(holiday.countryCode, 'ID');
+    expect(holiday.parsedDate, isNotNull);
+    expect(holiday.formattedDateIndo.contains('Desember 2026'), true);
+    expect(holiday.shortDateIndo, '25 Des');
+  });
+
+  test('CalendarService provides offline fallback when network is unavailable', () async {
+    final service = CalendarService();
+    // Test that fetchYearHolidays or offline fallbacks provide valid items
+    final holidays = await service.fetchYearHolidays(2026);
+    expect(holidays, isNotEmpty);
+    expect(holidays.any((h) => h.localName.contains('Natal')), true);
   });
 }
