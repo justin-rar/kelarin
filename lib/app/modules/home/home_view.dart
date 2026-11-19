@@ -12,6 +12,7 @@ import '../../global_widgets/section_label.dart';
 import '../../global_widgets/stat_tile.dart';
 import '../../routes/app_routes.dart';
 import '../ai/views/tanya_ai_bottom_sheet.dart';
+import '../main_navigation/main_nav_controller.dart';
 import '../task/task_controller.dart';
 import '../task/widgets/task_card.dart';
 
@@ -79,23 +80,29 @@ class _HomeViewState extends State<HomeView> {
                       padding: const EdgeInsets.symmetric(horizontal: AppDimens.margin),
                       child: Obx(() => Row(
                             children: [
-                              // Tile 1: Hari Ini (Stat Light)
+                              // Tile 1: Total (Stat Light)
                               Expanded(
                                 child: StatTile(
-                                  value: controller.todayCount.toString(),
-                                  label: 'Hari Ini',
+                                  value: controller.totalCount.toString(),
+                                  label: 'Total',
                                   backgroundColor: AppColors.statLight,
                                   variant: StatTileVariant.home,
+                                  onTap: () => controller.selectedCategory.value = 'Semua',
                                 ),
                               ),
                               const SizedBox(width: AppDimens.gutter),
-                              // Tile 2: Semua (Stat Dark)
+                              // Tile 2: Sudah Selesai (Stat Dark)
                               Expanded(
                                 child: StatTile(
-                                  value: controller.allCount.toString(),
-                                  label: 'Semua',
+                                  value: controller.completedCount.toString(),
+                                  label: 'Sudah Selesai',
                                   backgroundColor: AppColors.statDark,
                                   variant: StatTileVariant.home,
+                                  onTap: () {
+                                    if (Get.isRegistered<MainNavController>()) {
+                                      Get.find<MainNavController>().changeTab(1);
+                                    }
+                                  },
                                 ),
                               ),
                             ],

@@ -41,9 +41,9 @@ void main() {
   });
 
   test('Design system color tokens match monochrome specifications', () {
-    expect(AppColors.primary.value, 0xFF000000);
-    expect(AppColors.background.value, 0xFFF9F9FA);
-    expect(AppColors.surface.value, 0xFFFFFFFF);
+    expect(AppColors.primary.toARGB32(), 0xFF000000);
+    expect(AppColors.background.toARGB32(), 0xFFF9F9FA);
+    expect(AppColors.surface.toARGB32(), 0xFFFFFFFF);
   });
 
   test('PIN history and recovery verification logic behaves correctly', () {
@@ -141,6 +141,29 @@ void main() {
     expect(emptyNotif.id, '');
     expect(emptyNotif.isRead, false);
     expect(emptyNotif.type, 'TUGAS');
+  });
+
+  test('Attendance day selection and multi-day formatting works correctly', () {
+    final attendance = AttendanceModel(
+      id: 'att_1',
+      subjectName: 'Algoritma & Struktur Data',
+      type: 'Praktikum',
+      day: 'Senin - Jumat',
+      time: '08:00 - 09:40 WIB',
+      room: 'Lab Komputer 3 (4A)',
+      reminderActive: true,
+      scheduledEpoch: DateTime.now().add(const Duration(days: 2)).millisecondsSinceEpoch,
+    );
+
+    expect(attendance.day, 'Senin - Jumat');
+    expect(attendance.room, 'Lab Komputer 3 (4A)');
+    expect(attendance.reminderActive, true);
+
+    final map = attendance.toMap();
+    final reconstructed = AttendanceModel.fromMap(map);
+    expect(reconstructed.day, 'Senin - Jumat');
+    expect(reconstructed.room, 'Lab Komputer 3 (4A)');
+    expect(reconstructed.scheduledEpoch, attendance.scheduledEpoch);
   });
 }
 

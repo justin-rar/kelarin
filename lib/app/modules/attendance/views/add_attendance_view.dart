@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/app_shadows.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../data/models/attendance_model.dart';
+import '../../../data/services/notification_service.dart';
 import '../../../global_widgets/app_form_field.dart';
 import '../../../global_widgets/form_top_bar.dart';
 import '../../../global_widgets/segmented_selector.dart';
@@ -27,10 +27,36 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
   final TextEditingController classController = TextEditingController();
   final TextEditingController roomController = TextEditingController();
 
-  DateTime selectedDate = DateTime.now();
+  static const List<String> _allDays = [
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu',
+  ];
+
+  static const List<String> _weekdays = [
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+  ];
+
+  // Set pilihan hari (default: Senin)
+  final Set<String> selectedDays = {'Senin'};
   TimeOfDay selectedTime = const TimeOfDay(hour: 8, minute: 0);
 
   String selectedType = 'Praktikum';
+
+  // Toggle notifikasi (default hanya saat kuliah dimulai)
+  bool notifyAtStart = true;
+  bool notify15Min = false;
+  bool notify30Min = false;
+
+  final List<String> types = ['Praktikum', 'Teori'];
 
   @override
   void initState() {
@@ -38,14 +64,11 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
     controller = Get.isRegistered<AttendanceController>()
         ? Get.find<AttendanceController>()
         : Get.put(AttendanceController(), permanent: true);
+
+    if (Get.isRegistered<NotificationService>()) {
+      Get.find<NotificationService>().requestPermissions();
+    }
   }
-
-  // Toggle rows
-  bool notifyAtStart = true;
-  bool notify15Min = true;
-  bool notify30Min = false;
-
-  final List<String> types = ['Praktikum', 'Teori'];
 
   @override
   void dispose() {
@@ -55,6 +78,81 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
     super.dispose();
   }
 
+  bool get _isAllWeekdaysSelected =>
+      _weekdays.every((d) => selectedDays.contains(d)) &&
+      selectedDays.length == _weekdays.length;
+
+  void _toggleAllWeekdays() {
+    setState(() {
+      if (_isAllWeekdaysSelected) {
+        selectedDays.clear();
+        selectedDays.add('Senin');
+      } else {
+        selectedDays.clear();
+        selectedDays.addAll(_weekdays);
+      }
+    });
+  }
+
+  void _toggleDay(String day) {
+    setState(() {
+      if (selectedDays.contains(day)) {
+        if (selectedDays.length > 1) {
+          selectedDays.remove(day);
+        }
+      } else {
+        selectedDays.add(day);
+      }
+    });
+  }
+
+  String _formatSelectedDays() {
+    if (_isAllWeekdaysSelected) {
+      return 'Senin - Jumat';
+    }
+    final sorted = _allDays.where((d) => selectedDays.contains(d)).toList();
+    return sorted.join(', ');
+  }
+
+  /// Menghitung DateTime kemunculan berikutnya dari hari & jam yang dipilih
+  DateTime _getNextOccurrenceForDays(Set<String> days, TimeOfDay time) {
+    const dayMap = {
+      'Senin': 1,
+      'Selasa': 2,
+      'Rabu': 3,
+      'Kamis': 4,
+      'Jumat': 5,
+      'Sabtu': 6,
+      'Minggu': 7,
+    };
+
+    final now = DateTime.now();
+    DateTime? earliest;
+
+    for (final day in days) {
+      final targetWeekday = dayMap[day] ?? 1;
+      int daysUntil = (targetWeekday - now.weekday) % 7;
+      DateTime candidate = DateTime(
+        now.year,
+        now.month,
+        now.day + daysUntil,
+        time.hour,
+        time.minute,
+      );
+
+      // Jika waktu hari ini sudah terlewat, lompat ke minggu depan
+      if (candidate.isBefore(now)) {
+        candidate = candidate.add(const Duration(days: 7));
+      }
+
+      if (earliest == null || candidate.isBefore(earliest)) {
+        earliest = candidate;
+      }
+    }
+
+    return earliest ?? now.add(const Duration(days: 1));
+  }
+
   void _saveAttendance() {
     final name = subjectController.text.trim();
     if (name.isEmpty) {
@@ -62,45 +160,57 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
         'Perhatian',
         'Nama mata kuliah wajib diisi!',
         snackPosition: SnackPosition.TOP,
+        duration: const Duration(milliseconds: 1800),
         backgroundColor: AppColors.primary,
         colorText: AppColors.onPrimary,
       );
       return;
     }
 
-    final dayName = DateFormat('EEEE', 'id_ID').format(selectedDate);
-    final startTimeStr = '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}';
-    // Estimated end time 1h40m later
-    final endHour = (selectedTime.hour + 1 + (selectedTime.minute + 40 >= 60 ? 1 : 0)) % 24;
+    if (selectedDays.isEmpty) {
+      Get.snackbar(
+        'Perhatian',
+        'Pilih minimal satu hari kuliah!',
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(milliseconds: 1800),
+        backgroundColor: AppColors.primary,
+        colorText: AppColors.onPrimary,
+      );
+      return;
+    }
+
+    final dayFormatted = _formatSelectedDays();
+    final startTimeStr =
+        '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}';
+    final endHour = (selectedTime.hour +
+            1 +
+            (selectedTime.minute + 40 >= 60 ? 1 : 0)) %
+        24;
     final endMinute = (selectedTime.minute + 40) % 60;
-    final endTimeStr = '${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')}';
+    final endTimeStr =
+        '${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')}';
     final timeStr = '$startTimeStr - $endTimeStr WIB';
 
-    final className = classController.text.trim().isNotEmpty
-        ? 'Kelas ${classController.text.trim()}'
-        : dayName;
+    final roomText = roomController.text.trim().isNotEmpty
+        ? roomController.text.trim()
+        : 'Lab Komputer';
+    final fullRoom = classController.text.trim().isNotEmpty
+        ? '$roomText (${classController.text.trim()})'
+        : roomText;
 
-    final scheduledDateTime = DateTime(
-      selectedDate.year,
-      selectedDate.month,
-      selectedDate.day,
-      selectedTime.hour,
-      selectedTime.minute,
-    );
+    final nextOccurrence = _getNextOccurrenceForDays(selectedDays, selectedTime);
 
     final newAttendance = AttendanceModel(
       id: 'att_${DateTime.now().millisecondsSinceEpoch}',
       subjectName: name,
       type: selectedType,
-      day: className,
+      day: dayFormatted,
       time: timeStr,
-      room: roomController.text.trim().isNotEmpty
-          ? roomController.text.trim()
-          : 'Lab Komputer',
+      room: fullRoom,
       reminderActive: notifyAtStart || notify15Min || notify30Min,
       attendedMeetings: 0,
       totalMeetings: 14,
-      scheduledEpoch: scheduledDateTime.millisecondsSinceEpoch,
+      scheduledEpoch: nextOccurrence.millisecondsSinceEpoch,
     );
 
     controller.addAttendance(
@@ -164,76 +274,132 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 3. Jadwal & Waktu (2 Kolom button style)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      'JADWAL & WAKTU',
-                      style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
-                    ),
-                  ),
+                  // 3. Pilihan Hari Kuliah (Pilihan hari Senin s/d Jumat & Custom)
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: _pickDate,
-                          child: Container(
-                            height: 52,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                              boxShadow: const [AppShadows.field],
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.secondary),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    DateFormat('d MMM yyyy').format(selectedDate),
-                                    style: AppTypography.bodyDefault.copyWith(fontWeight: FontWeight.w600),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      Text(
+                        'HARI KULIAH *',
+                        style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
                       ),
-                      const SizedBox(width: AppDimens.gutter),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: _pickTime,
-                          child: Container(
-                            height: 52,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(AppDimens.radiusInput),
-                              boxShadow: const [AppShadows.field],
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.schedule_outlined, size: 18, color: AppColors.secondary),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')} WIB',
-                                    style: AppTypography.bodyDefault.copyWith(fontWeight: FontWeight.w600),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
+                      GestureDetector(
+                        onTap: _toggleAllWeekdays,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(
+                            _isAllWeekdaysSelected ? 'Reset Hari' : 'Pilih Senin - Jumat',
+                            style: AppTypography.captionMeta.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                              decoration: TextDecoration.underline,
                             ),
                           ),
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _allDays.map((day) {
+                      final isSelected = selectedDays.contains(day);
+                      return GestureDetector(
+                        onTap: () => _toggleDay(day),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppColors.primary : AppColors.surface,
+                            borderRadius: BorderRadius.circular(AppDimens.radiusFull),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.divider,
+                              width: 1.2,
+                            ),
+                            boxShadow: isSelected ? const [AppShadows.standard] : null,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isSelected) ...[
+                                const Icon(
+                                  Icons.check_rounded,
+                                  size: 14,
+                                  color: AppColors.onPrimary,
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              Text(
+                                day,
+                                style: AppTypography.captionMeta.copyWith(
+                                  color: isSelected
+                                      ? AppColors.onPrimary
+                                      : AppColors.onSurface,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                   const SizedBox(height: 16),
 
-                  // 4. Tipe Kelas *
+                  // 4. Jam Mulai Kuliah
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'JAM MULAI KULIAH *',
+                      style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: _pickTime,
+                    child: Container(
+                      height: 52,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(AppDimens.radiusInput),
+                        boxShadow: const [AppShadows.field],
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.schedule_outlined,
+                            size: 18,
+                            color: AppColors.secondary,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')} WIB',
+                              style: AppTypography.bodyDefault.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_drop_down_rounded,
+                            color: AppColors.secondary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 5. Tipe Kelas *
                   SegmentedSelector(
                     label: 'Tipe Kelas *',
                     options: types,
@@ -243,7 +409,7 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 5. Notifikasi Absen (Card 24px with ToggleRows)
+                  // 6. Notifikasi Absen (Card 24px with ToggleRows)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
@@ -267,14 +433,24 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
                           value: notifyAtStart,
                           onChanged: (v) => setState(() => notifyAtStart = v),
                         ),
-                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        const Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: AppColors.divider,
+                        ),
                         ToggleRow(
                           label: '15 menit sebelum',
                           icon: Icons.notifications_none_rounded,
                           value: notify15Min,
                           onChanged: (v) => setState(() => notify15Min = v),
                         ),
-                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        const Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: AppColors.divider,
+                        ),
                         ToggleRow(
                           label: '30 menit sebelum',
                           icon: notify30Min
@@ -302,31 +478,6 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
         ),
       ),
     );
-  }
-
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2024),
-      lastDate: DateTime(2030),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: AppColors.onPrimary,
-              surface: AppColors.surface,
-              onSurface: AppColors.onSurface,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      setState(() => selectedDate = picked);
-    }
   }
 
   Future<void> _pickTime() async {

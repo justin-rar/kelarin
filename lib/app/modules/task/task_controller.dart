@@ -180,6 +180,14 @@ class TaskController extends GetxController {
     return allTasks.where((t) => !t.isCompleted).length;
   }
 
+  int get totalCount {
+    return allTasks.length;
+  }
+
+  int get completedCount {
+    return completedTasks.length;
+  }
+
   // Filter category counts
   int getCategoryCount(String category) {
     if (category == 'Semua') {
@@ -196,14 +204,25 @@ class TaskController extends GetxController {
   }
 
   // CRUD Operations
-  Future<void> addTask(TaskModel task) async {
+  Future<void> addTask(
+    TaskModel task, {
+    bool remind1Day = false,
+    bool remind12Hours = false,
+    bool remind6Hours = false,
+    bool remind3Hours = false,
+    bool remind1Hour = false,
+  }) async {
     await _storage.taskBox.put(task.id, task);
     loadTasks();
 
-    if (task.dateTime.isAfter(DateTime.now())) {
+    final now = DateTime.now();
+    final baseId = _taskNotifId(task.id);
+
+    // 1. Notifikasi tenggat tugas
+    if (task.dateTime.isAfter(now)) {
       try {
         await _notifications.scheduleNotification(
-          id: _taskNotifId(task.id),
+          id: baseId,
           title: 'Tenggat Tugas: ${task.title}',
           body: 'Tugas "${task.title}" (${task.category}) sudah jatuh tempo.',
           scheduledDate: task.dateTime,
@@ -211,24 +230,181 @@ class TaskController extends GetxController {
       } catch (_) {}
     }
 
+    // 2. Pengingat bertingkat sebelum deadline
+    if (remind1Hour) {
+      final t = task.dateTime.subtract(const Duration(hours: 1));
+      if (t.isAfter(now)) {
+        try {
+          await _notifications.scheduleNotification(
+            id: baseId + 1,
+            title: 'Pengingat Tugas: 1 Jam Lagi',
+            body: 'Tugas "${task.title}" akan jatuh tempo dalam 1 jam.',
+            scheduledDate: t,
+          );
+        } catch (_) {}
+      }
+    }
+
+    if (remind3Hours) {
+      final t = task.dateTime.subtract(const Duration(hours: 3));
+      if (t.isAfter(now)) {
+        try {
+          await _notifications.scheduleNotification(
+            id: baseId + 2,
+            title: 'Pengingat Tugas: 3 Jam Lagi',
+            body: 'Tugas "${task.title}" akan jatuh tempo dalam 3 jam.',
+            scheduledDate: t,
+          );
+        } catch (_) {}
+      }
+    }
+
+    if (remind6Hours) {
+      final t = task.dateTime.subtract(const Duration(hours: 6));
+      if (t.isAfter(now)) {
+        try {
+          await _notifications.scheduleNotification(
+            id: baseId + 3,
+            title: 'Pengingat Tugas: 6 Jam Lagi',
+            body: 'Tugas "${task.title}" akan jatuh tempo dalam 6 jam.',
+            scheduledDate: t,
+          );
+        } catch (_) {}
+      }
+    }
+
+    if (remind12Hours) {
+      final t = task.dateTime.subtract(const Duration(hours: 12));
+      if (t.isAfter(now)) {
+        try {
+          await _notifications.scheduleNotification(
+            id: baseId + 4,
+            title: 'Pengingat Tugas: 12 Jam Lagi',
+            body: 'Tugas "${task.title}" akan jatuh tempo dalam 12 jam.',
+            scheduledDate: t,
+          );
+        } catch (_) {}
+      }
+    }
+
+    if (remind1Day) {
+      final t = task.dateTime.subtract(const Duration(days: 1));
+      if (t.isAfter(now)) {
+        try {
+          await _notifications.scheduleNotification(
+            id: baseId + 5,
+            title: 'Pengingat Tugas: 1 Hari Lagi',
+            body: 'Tugas "${task.title}" akan jatuh tempo besok.',
+            scheduledDate: t,
+          );
+        } catch (_) {}
+      }
+    }
+
     UndoToast.show(message: 'Tugas berhasil ditambahkan');
   }
 
-  Future<void> updateTask(TaskModel task) async {
+  Future<void> updateTask(
+    TaskModel task, {
+    bool remind1Day = false,
+    bool remind12Hours = false,
+    bool remind6Hours = false,
+    bool remind3Hours = false,
+    bool remind1Hour = false,
+  }) async {
     await _storage.taskBox.put(task.id, task);
     loadTasks();
 
-    try {
-      await _notifications.cancelNotification(_taskNotifId(task.id));
-      if (!task.isCompleted && task.dateTime.isAfter(DateTime.now())) {
-        await _notifications.scheduleNotification(
-          id: _taskNotifId(task.id),
-          title: 'Tenggat Tugas: ${task.title}',
-          body: 'Tugas "${task.title}" (${task.category}) sudah jatuh tempo.',
-          scheduledDate: task.dateTime,
-        );
+    final baseId = _taskNotifId(task.id);
+    for (int i = 0; i <= 5; i++) {
+      try {
+        await _notifications.cancelNotification(baseId + i);
+      } catch (_) {}
+    }
+
+    final now = DateTime.now();
+    if (!task.isCompleted) {
+      if (task.dateTime.isAfter(now)) {
+        try {
+          await _notifications.scheduleNotification(
+            id: baseId,
+            title: 'Tenggat Tugas: ${task.title}',
+            body: 'Tugas "${task.title}" (${task.category}) sudah jatuh tempo.',
+            scheduledDate: task.dateTime,
+          );
+        } catch (_) {}
       }
-    } catch (_) {}
+
+      if (remind1Hour) {
+        final t = task.dateTime.subtract(const Duration(hours: 1));
+        if (t.isAfter(now)) {
+          try {
+            await _notifications.scheduleNotification(
+              id: baseId + 1,
+              title: 'Pengingat Tugas: 1 Jam Lagi',
+              body: 'Tugas "${task.title}" akan jatuh tempo dalam 1 jam.',
+              scheduledDate: t,
+            );
+          } catch (_) {}
+        }
+      }
+
+      if (remind3Hours) {
+        final t = task.dateTime.subtract(const Duration(hours: 3));
+        if (t.isAfter(now)) {
+          try {
+            await _notifications.scheduleNotification(
+              id: baseId + 2,
+              title: 'Pengingat Tugas: 3 Jam Lagi',
+              body: 'Tugas "${task.title}" akan jatuh tempo dalam 3 jam.',
+              scheduledDate: t,
+            );
+          } catch (_) {}
+        }
+      }
+
+      if (remind6Hours) {
+        final t = task.dateTime.subtract(const Duration(hours: 6));
+        if (t.isAfter(now)) {
+          try {
+            await _notifications.scheduleNotification(
+              id: baseId + 3,
+              title: 'Pengingat Tugas: 6 Jam Lagi',
+              body: 'Tugas "${task.title}" akan jatuh tempo dalam 6 jam.',
+              scheduledDate: t,
+            );
+          } catch (_) {}
+        }
+      }
+
+      if (remind12Hours) {
+        final t = task.dateTime.subtract(const Duration(hours: 12));
+        if (t.isAfter(now)) {
+          try {
+            await _notifications.scheduleNotification(
+              id: baseId + 4,
+              title: 'Pengingat Tugas: 12 Jam Lagi',
+              body: 'Tugas "${task.title}" akan jatuh tempo dalam 12 jam.',
+              scheduledDate: t,
+            );
+          } catch (_) {}
+        }
+      }
+
+      if (remind1Day) {
+        final t = task.dateTime.subtract(const Duration(days: 1));
+        if (t.isAfter(now)) {
+          try {
+            await _notifications.scheduleNotification(
+              id: baseId + 5,
+              title: 'Pengingat Tugas: 1 Hari Lagi',
+              body: 'Tugas "${task.title}" akan jatuh tempo besok.',
+              scheduledDate: t,
+            );
+          } catch (_) {}
+        }
+      }
+    }
 
     UndoToast.show(message: 'Perubahan tugas disimpan');
   }
@@ -246,9 +422,12 @@ class TaskController extends GetxController {
       loadTasks();
 
       if (newStatus) {
-        try {
-          await _notifications.cancelNotification(_taskNotifId(taskId));
-        } catch (_) {}
+        final baseId = _taskNotifId(taskId);
+        for (int i = 0; i <= 5; i++) {
+          try {
+            await _notifications.cancelNotification(baseId + i);
+          } catch (_) {}
+        }
 
         UndoToast.show(
           message: 'Tugas ditandai selesai',
@@ -263,9 +442,12 @@ class TaskController extends GetxController {
     final index = allTasks.indexWhere((t) => t.id == taskId);
     if (index != -1) {
       _lastDeletedTask = allTasks[index];
-      try {
-        await _notifications.cancelNotification(_taskNotifId(taskId));
-      } catch (_) {}
+      final baseId = _taskNotifId(taskId);
+      for (int i = 0; i <= 5; i++) {
+        try {
+          await _notifications.cancelNotification(baseId + i);
+        } catch (_) {}
+      }
       await _storage.taskBox.delete(taskId);
       loadTasks();
 

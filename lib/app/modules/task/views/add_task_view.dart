@@ -6,6 +6,7 @@ import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/app_shadows.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../data/models/task_model.dart';
+import '../../../data/services/notification_service.dart';
 import '../../../global_widgets/app_form_field.dart';
 import '../../../global_widgets/form_top_bar.dart';
 import '../../../global_widgets/segmented_selector.dart';
@@ -48,6 +49,9 @@ class _AddTaskViewState extends State<AddTaskView> {
     controller = Get.isRegistered<TaskController>()
         ? Get.find<TaskController>()
         : Get.put(TaskController(), permanent: true);
+    if (Get.isRegistered<NotificationService>()) {
+      Get.find<NotificationService>().requestPermissions();
+    }
   }
 
   @override
@@ -64,6 +68,7 @@ class _AddTaskViewState extends State<AddTaskView> {
         'Perhatian',
         'Judul tugas wajib diisi!',
         snackPosition: SnackPosition.TOP,
+        duration: const Duration(milliseconds: 1800),
         backgroundColor: AppColors.primary,
         colorText: AppColors.onPrimary,
       );
@@ -91,7 +96,14 @@ class _AddTaskViewState extends State<AddTaskView> {
       note: noteController.text.trim().isNotEmpty ? noteController.text.trim() : null,
     );
 
-    controller.addTask(newTask);
+    controller.addTask(
+      newTask,
+      remind1Day: remind1Day,
+      remind12Hours: remind12Hours,
+      remind6Hours: remind6Hours,
+      remind3Hours: remind3Hours,
+      remind1Hour: remind1Hour,
+    );
     Get.back();
   }
 

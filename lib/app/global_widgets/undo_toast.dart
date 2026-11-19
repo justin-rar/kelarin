@@ -17,7 +17,7 @@ class UndoToast {
     VoidCallback? onAction,
     VoidCallback? onUndo, // Backward compatibility alias
     bool showClose = false,
-    Duration duration = const Duration(seconds: 4),
+    Duration duration = const Duration(milliseconds: 1800),
   }) {
     final effectiveCallback = onUndo ?? onAction;
 

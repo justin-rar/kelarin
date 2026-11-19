@@ -36,7 +36,7 @@ class AttendanceController extends GetxController {
     required AttendanceModel model,
     required DateTime scheduledTime,
     bool notifyAtStart = true,
-    bool notify15Min = true,
+    bool notify15Min = false,
     bool notify30Min = false,
   }) async {
     final baseId = _baseNotifId(model.id);
@@ -95,7 +95,7 @@ class AttendanceController extends GetxController {
   Future<void> addAttendance(
     AttendanceModel model, {
     bool notifyAtStart = true,
-    bool notify15Min = true,
+    bool notify15Min = false,
     bool notify30Min = false,
   }) async {
     await _storage.attendanceBox.put(model.id, model);
@@ -150,9 +150,15 @@ class AttendanceController extends GetxController {
       if (!newStatus) {
         await _cancelReminders(id);
       } else if (current.scheduledEpoch != null) {
+        var scheduledTime =
+            DateTime.fromMillisecondsSinceEpoch(current.scheduledEpoch!);
+        final now = DateTime.now();
+        while (scheduledTime.isBefore(now)) {
+          scheduledTime = scheduledTime.add(const Duration(days: 7));
+        }
         await _scheduleReminders(
           model: updated,
-          scheduledTime: DateTime.fromMillisecondsSinceEpoch(current.scheduledEpoch!),
+          scheduledTime: scheduledTime,
         );
       }
     }

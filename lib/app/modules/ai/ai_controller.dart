@@ -10,13 +10,7 @@ class AiController extends GetxController {
   final RxList<Map<String, dynamic>> messages = <Map<String, dynamic>>[].obs;
   final RxBool isLoading = false.obs;
 
-  List<String> _lastAddedSessionIds = [];
-
-  @override
-  void onInit() {
-    super.onInit();
-    // Initially empty to present the Layar 18 Empty State ("Mulai Tanya AI")
-  }
+  final List<String> _lastAddedSessionIds = [];
 
   void clearHistory() {
     messages.clear();

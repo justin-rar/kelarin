@@ -1004,11 +1004,16 @@ class _TanyaAiViewState extends State<TanyaAiView> {
   // FLOATING BOTTOM INPUT BAR
   // ---------------------------------------------------------------------------
   Widget _buildFloatingInputBar() {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPadding = bottomInset > 0
+        ? 12.0
+        : max(16.0, MediaQuery.of(context).padding.bottom + 8.0);
+
     return Container(
       padding: EdgeInsets.only(
         left: AppDimens.margin,
         right: AppDimens.margin,
-        bottom: max(16.0, MediaQuery.of(context).viewInsets.bottom + 12),
+        bottom: bottomPadding,
         top: 8,
       ),
       decoration: BoxDecoration(
@@ -1016,8 +1021,8 @@ class _TanyaAiViewState extends State<TanyaAiView> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.background.withOpacity(0.0),
-            AppColors.background.withOpacity(0.95),
+            AppColors.background.withValues(alpha: 0.0),
+            AppColors.background.withValues(alpha: 0.95),
             AppColors.background,
           ],
           stops: const [0.0, 0.4, 1.0],

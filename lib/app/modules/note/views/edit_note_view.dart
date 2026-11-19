@@ -66,6 +66,7 @@ class _EditNoteViewState extends State<EditNoteView> {
         'Perhatian',
         'Judul catatan wajib diisi!',
         snackPosition: SnackPosition.TOP,
+        duration: const Duration(milliseconds: 1800),
         backgroundColor: AppColors.primary,
         colorText: AppColors.onPrimary,
       );

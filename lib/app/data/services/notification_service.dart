@@ -147,7 +147,22 @@ class NotificationService extends GetxService {
         macOS: iosDetails,
       );
 
-      final tzScheduledDate = tz.TZDateTime.from(scheduledDate, tz.local);
+      final tzScheduledDate = tz.TZDateTime(
+        tz.local,
+        scheduledDate.year,
+        scheduledDate.month,
+        scheduledDate.day,
+        scheduledDate.hour,
+        scheduledDate.minute,
+        scheduledDate.second,
+      );
+
+      final tzNow = tz.TZDateTime.now(tz.local);
+      if (!tzScheduledDate.isAfter(tzNow)) {
+        // Jika selisih waktu sudah sangat dekat atau terlewat beberapa detik, langsung tampilkan
+        await showNotification(id: id, title: title, body: body);
+        return;
+      }
 
       try {
         await _plugin.zonedSchedule(

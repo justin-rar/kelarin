@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
+import '../../main_navigation/main_nav_controller.dart';
 import '../../task/task_controller.dart';
 import '../../../global_widgets/sine_wave_painter.dart';
 
@@ -17,13 +18,13 @@ class StatGrid extends GetView<TaskController> {
           // 2x2 Checkerboard Stat Grid with SineWave Decoration
           Row(
             children: [
-              // Tile 1: Hari Ini (Stat Light)
+              // Tile 1: Total (Stat Light)
               Expanded(
                 child: Obx(() => _buildStatTile(
-                  count: controller.todayCount.toString(),
-                  label: 'Hari Ini',
+                  count: controller.totalCount.toString(),
+                  label: 'Total',
                   bgColor: AppColors.statLight,
-                  onTap: () => controller.selectedCategory.value = 'Hari Ini',
+                  onTap: () => controller.selectedCategory.value = 'Semua',
                 )),
               ),
               const SizedBox(width: AppDimens.gutter),
@@ -51,13 +52,17 @@ class StatGrid extends GetView<TaskController> {
                 )),
               ),
               const SizedBox(width: AppDimens.gutter),
-              // Tile 4: Semua (Stat Light)
+              // Tile 4: Sudah Selesai (Stat Light)
               Expanded(
                 child: Obx(() => _buildStatTile(
-                  count: controller.allCount.toString(),
-                  label: 'Semua Tugas',
+                  count: controller.completedCount.toString(),
+                  label: 'Sudah Selesai',
                   bgColor: AppColors.statLight,
-                  onTap: () => controller.selectedCategory.value = 'Semua',
+                  onTap: () {
+                    if (Get.isRegistered<MainNavController>()) {
+                      Get.find<MainNavController>().changeTab(1);
+                    }
+                  },
                 )),
               ),
             ],
@@ -94,7 +99,7 @@ class StatGrid extends GetView<TaskController> {
                 child: CustomPaint(
                   size: const Size(44, 14),
                   painter: SineWavePainter(
-                    color: AppColors.primary.withOpacity(0.35),
+                    color: AppColors.primary.withValues(alpha: 0.35),
                     strokeWidth: 2.0,
                   ),
                 ),
