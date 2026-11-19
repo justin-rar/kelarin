@@ -181,7 +181,8 @@ class TaskController extends GetxController {
   }
 
   int get totalCount {
-    return allTasks.length;
+    // Total tugas yang belum selesai (aktif)
+    return allTasks.where((t) => !t.isCompleted).length;
   }
 
   int get completedCount {

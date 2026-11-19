@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../main_navigation/main_nav_controller.dart';
@@ -20,22 +21,26 @@ class StatGrid extends GetView<TaskController> {
             children: [
               // Tile 1: Total (Stat Light)
               Expanded(
-                child: Obx(() => _buildStatTile(
-                  count: controller.totalCount.toString(),
-                  label: 'Total',
-                  bgColor: AppColors.statLight,
-                  onTap: () => controller.selectedCategory.value = 'Semua',
-                )),
+                child: Obx(
+                  () => _buildStatTile(
+                    count: controller.totalCount.toString(),
+                    label: 'Total',
+                    bgColor: AppColors.statLight,
+                    onTap: () => controller.selectedCategory.value = 'Semua',
+                  ),
+                ),
               ),
               const SizedBox(width: AppDimens.gutter),
               // Tile 2: Terjadwal (Stat Dark)
               Expanded(
-                child: Obx(() => _buildStatTile(
-                  count: controller.scheduledCount.toString(),
-                  label: 'Terjadwal',
-                  bgColor: AppColors.statDark,
-                  onTap: () => controller.selectedCategory.value = 'Semua',
-                )),
+                child: Obx(
+                  () => _buildStatTile(
+                    count: controller.scheduledCount.toString(),
+                    label: 'Terjadwal',
+                    bgColor: AppColors.statDark,
+                    onTap: () => controller.selectedCategory.value = 'Semua',
+                  ),
+                ),
               ),
             ],
           ),
@@ -44,26 +49,30 @@ class StatGrid extends GetView<TaskController> {
             children: [
               // Tile 3: Prioritas (Stat Dark)
               Expanded(
-                child: Obx(() => _buildStatTile(
-                  count: controller.priorityCount.toString(),
-                  label: 'Prioritas',
-                  bgColor: AppColors.statDark,
-                  onTap: () => controller.selectedCategory.value = 'Semua',
-                )),
+                child: Obx(
+                  () => _buildStatTile(
+                    count: controller.priorityCount.toString(),
+                    label: 'Prioritas',
+                    bgColor: AppColors.statDark,
+                    onTap: () => controller.selectedCategory.value = 'Semua',
+                  ),
+                ),
               ),
               const SizedBox(width: AppDimens.gutter),
               // Tile 4: Sudah Selesai (Stat Light)
               Expanded(
-                child: Obx(() => _buildStatTile(
-                  count: controller.completedCount.toString(),
-                  label: 'Sudah Selesai',
-                  bgColor: AppColors.statLight,
-                  onTap: () {
-                    if (Get.isRegistered<MainNavController>()) {
-                      Get.find<MainNavController>().changeTab(1);
-                    }
-                  },
-                )),
+                child: Obx(
+                  () => _buildStatTile(
+                    count: controller.completedCount.toString(),
+                    label: 'Sudah Selesai',
+                    bgColor: AppColors.statLight,
+                    onTap: () {
+                      if (Get.isRegistered<MainNavController>()) {
+                        Get.find<MainNavController>().changeTab(1);
+                      }
+                    },
+                  ),
+                ),
               ),
             ],
           ),
