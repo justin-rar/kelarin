@@ -4,6 +4,7 @@ import 'package:kelarin/app/data/models/attendance_model.dart';
 import 'package:kelarin/app/data/models/note_model.dart';
 import 'package:kelarin/app/data/models/notification_item_model.dart';
 import 'package:kelarin/app/data/models/task_model.dart';
+import 'package:kelarin/app/data/services/gemini_service.dart';
 
 void main() {
   test('State awal aplikasi adalah kosong (tidak ada data bawaan)', () {
@@ -166,5 +167,10 @@ void main() {
     expect(reconstructed.day, 'Senin - Jumat');
     expect(reconstructed.room, 'Lab Komputer 3 (4A)');
     expect(reconstructed.scheduledEpoch, attendance.scheduledEpoch);
+  });
+
+  test('GeminiService has valid configuration and non-empty API key', () {
+    expect(GeminiService.apiKey.isNotEmpty, true);
+    expect(GeminiService.apiKey.length, 53);
   });
 }

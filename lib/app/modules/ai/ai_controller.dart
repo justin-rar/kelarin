@@ -1,8 +1,11 @@
 import 'package:get/get.dart';
 import '../../data/models/task_model.dart';
+import '../../data/services/gemini_service.dart';
 import '../task/task_controller.dart';
 
 class AiController extends GetxController {
+  final GeminiService _geminiService = GeminiService();
+
   TaskController get _taskController => Get.isRegistered<TaskController>()
       ? Get.find<TaskController>()
       : Get.put(TaskController(), permanent: true);
@@ -17,7 +20,7 @@ class AiController extends GetxController {
     _lastAddedSessionIds.clear();
   }
 
-  void sendMessage(String text) {
+  Future<void> sendMessage(String text) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
 
@@ -35,31 +38,39 @@ class AiController extends GetxController {
 
     isLoading.value = true;
 
-    Future.delayed(const Duration(milliseconds: 600), () {
-      _processAiResponse(trimmed);
+    try {
+      await _processAiResponse(trimmed);
+    } catch (_) {
+      messages.add({
+        'isUser': false,
+        'text':
+            'Maaf, terjadi kendala saat memproses jawaban. Silakan coba lagi.',
+        'timestamp': timeStr,
+      });
+    } finally {
       isLoading.value = false;
-    });
+    }
   }
 
-  void _processAiResponse(String query) {
+  Future<void> _processAiResponse(String query) async {
     final lower = query.toLowerCase();
     final now = DateTime.now();
     final hour = now.hour.toString().padLeft(2, '0');
     final minute = now.minute.toString().padLeft(2, '0');
     final timeStr = '$hour:$minute';
 
+    // 1. Quick suggestion interaktif: Sesi belajar terstruktur dengan action card
     if (lower.contains('basis data') ||
-        lower.contains('rencana belajar') ||
         lower.contains('jadwal belajar intensif')) {
       messages.add({
         'isUser': false,
         'text':
-            'Tentu Titut! Berdasarkan materi normalisasi & indeks pada catatanmu, ini rekomendasi jadwal belajar terstruktur:',
+            'Tentu! Berdasarkan materi kuliah dan agenda belajarmu, ini rekomendasi jadwal belajar terstruktur:',
         'timestamp': timeStr,
         'hasSchedule': true,
         'scheduleTitle': 'Rencana Belajar: Basis Data',
         'scheduleSubtitle': '3 Sesi • Total durasi 3 jam 30 mnt',
-        'scheduleDate': 'Kamis, 26 Okt',
+        'scheduleDate': 'Jadwal Intensif',
         'isAdded': false,
         'sessions': [
           {
@@ -82,6 +93,7 @@ class AiController extends GetxController {
             'Apakah kamu ingin menambahkan pengingat alarm 15 menit sebelum setiap sesi dimulai?',
         'followUpOptions': ['Ya, pasang alarm', 'Tidak perlu'],
       });
+      return;
     } else if (lower.contains('pasang alarm') || lower.contains('ya, pasang')) {
       messages.add({
         'isUser': false,
@@ -89,75 +101,41 @@ class AiController extends GetxController {
             '✓ Pengingat alarm 15 menit sebelum setiap sesi dimulai telah berhasil diaktifkan ke notifikasi sistem!',
         'timestamp': timeStr,
       });
+      return;
     } else if (lower.contains('tidak perlu')) {
       messages.add({
         'isUser': false,
         'text':
-            'Baik Titut, sesi belajar tetap tersimpan di agenda tanpa alarm pengingat tambahan.',
+            'Baik, sesi belajar tetap tersimpan di agenda tanpa alarm pengingat tambahan.',
         'timestamp': timeStr,
       });
-    } else if (lower.contains('kuliah & tugas') ||
-        lower.contains('jadwal') ||
-        lower.contains('hari ini')) {
-      final active = _taskController.activeTasks;
-      if (active.isEmpty) {
-        messages.add({
-          'isUser': false,
-          'text':
-              'Hebat! Saat ini tidak ada tugas aktif yang menumpuk hari ini. Kamu bisa memanfaatkan waktu luang untuk membaca materi kuliah atau beristirahat.',
-          'timestamp': timeStr,
-        });
-      } else {
-        final listStr = active
-            .take(3)
-            .map((t) => '• ${t.title} (${t.timeString}) [${t.priority}]')
-            .join('\n');
-        messages.add({
-          'isUser': false,
-          'text':
-              'Berikut agenda tugas aktifmu untuk hari ini:\n\n$listStr\n\nPastikan untuk menyelesaikan prioritas utama tepat waktu!',
-          'timestamp': timeStr,
-        });
-      }
-    } else if (lower.contains('rangkum') || lower.contains('catatan')) {
-      messages.add({
-        'isUser': false,
-        'text':
-            'Berikut rangkuman inti catatan kuliah terakhirmu mengenai Arsitektur Mobile & GetX State Management:\n\n'
-            '1. Pemisahan Layer: GetX memisahkan UI (View), Business Logic (Controller), dan Dependency Injection (Binding).\n'
-            '2. Reaktivitas: Menggunakan tipe .obs dan widget Obx() untuk render ulang presisi tanpa setState.\n'
-            '3. Persistensi: Integrasi Hive Box & SharedPreferences menyimpan data aman secara offline.\n'
-            '4. Navigation: Navigasi deklaratif Get.toNamed() mempermudah routing antar-halaman.',
-        'timestamp': timeStr,
-      });
-    } else if (lower.contains('prioritas') || lower.contains('menumpuk')) {
-      final highPriority = _taskController.highPriorityActiveTasks;
-      if (highPriority.isNotEmpty) {
-        final taskNames =
-            highPriority.map((t) => '• ${t.title} (${t.timeString})').join('\n');
-        messages.add({
-          'isUser': false,
-          'text':
-              'Tugas prioritas utama yang harus kamu selesaikan terlebih dahulu:\n\n$taskNames\n\n'
-              'Fokus selesaikan tugas-tugas di atas sebelum tenggat waktu mendekat!',
-          'timestamp': timeStr,
-        });
-      } else {
-        messages.add({
-          'isUser': false,
-          'text':
-              'Saat ini semua tugas prioritas tinggi telah terselesaikan. Kamu berada di jalur yang sangat aman!',
-          'timestamp': timeStr,
-        });
-      }
-    } else {
-      messages.add({
-        'isUser': false,
-        'text':
-            'Saya siap membantu! Kamu bisa meminta saya menyusun jadwal belajar intensif, merangkum materi catatan kuliah, atau menyaring prioritas tugas harian.',
-        'timestamp': timeStr,
-      });
+      return;
     }
+
+    // 2. Kueri lainnya langsung dikirimkan ke Google Gemini API secara real-time
+    final activeTasks = _taskController.activeTasks;
+    String? userContext;
+    if (activeTasks.isNotEmpty) {
+      final taskList = activeTasks
+          .take(5)
+          .map((t) =>
+              '- ${t.title} (Kategori: ${t.category}, Prioritas: ${t.priority}, Waktu: ${t.timeString})')
+          .join('\n');
+      userContext = 'Daftar Tugas Aktif Mahasiswa saat ini:\n$taskList';
+    }
+
+    final aiReply = await _geminiService.askGemini(
+      query: query,
+      userContext: userContext,
+      recentHistory: messages.toList(),
+    );
+
+    messages.add({
+      'isUser': false,
+      'text': aiReply,
+      'timestamp': timeStr,
+      'hasAction': false,
+    });
   }
 
   void addScheduleSessionsToTasks(int messageIndex) {
