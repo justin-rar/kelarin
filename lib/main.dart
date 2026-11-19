@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'app/core/theme/app_theme.dart';
 import 'app/data/services/notification_service.dart';
 import 'app/data/services/storage_service.dart';
@@ -7,6 +8,9 @@ import 'app/routes/app_pages.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi locale Bahasa Indonesia untuk DateFormat
+  await initializeDateFormatting('id_ID', null);
 
   // 1. Inisialisasi Service Penyimpanan Lokal (Hive & SharedPreferences)
   await Get.putAsync(() => StorageService().init());
