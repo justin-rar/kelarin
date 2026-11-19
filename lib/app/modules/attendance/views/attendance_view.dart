@@ -8,7 +8,6 @@ import '../../../global_widgets/course_card.dart';
 import '../../../global_widgets/empty_state.dart';
 import '../../../global_widgets/page_title_row.dart';
 import '../../../routes/app_routes.dart';
-import '../../ai/views/tanya_ai_bottom_sheet.dart';
 import '../attendance_controller.dart';
 
 class AttendanceView extends GetView<AttendanceController> {
@@ -23,9 +22,7 @@ class AttendanceView extends GetView<AttendanceController> {
         child: Column(
           children: [
             // Fixed AppHeader (56px, blur + background/90)
-            AppHeader(
-              onAiTap: () => TanyaAiBottomSheet.show(context),
-            ),
+            const AppHeader(),
             const SizedBox(height: 8),
 
             Expanded(

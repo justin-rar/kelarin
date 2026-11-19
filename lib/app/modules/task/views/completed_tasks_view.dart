@@ -10,7 +10,6 @@ import '../../../global_widgets/confirmation_dialog.dart';
 import '../../../global_widgets/empty_state.dart';
 import '../../../global_widgets/page_title_row.dart';
 import '../../../global_widgets/section_label.dart';
-import '../../ai/views/tanya_ai_bottom_sheet.dart';
 import '../task_controller.dart';
 import '../widgets/task_card.dart';
 
@@ -38,9 +37,7 @@ class CompletedTasksView extends GetView<TaskController> {
         bottom: false,
         child: Column(
           children: [
-            AppHeader(
-              onAiTap: () => TanyaAiBottomSheet.show(context),
-            ),
+            const AppHeader(),
             const SizedBox(height: 8),
 
             Expanded(

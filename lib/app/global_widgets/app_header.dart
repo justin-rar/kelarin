@@ -15,13 +15,11 @@ import '../routes/app_routes.dart';
 /// Acuan: design/DESIGN.md
 class AppHeader extends StatefulWidget {
   final VoidCallback? onNotificationTap;
-  final VoidCallback? onAiTap;
   final VoidCallback? onProfileTap;
 
   const AppHeader({
     super.key,
     this.onNotificationTap,
-    this.onAiTap,
     this.onProfileTap,
   });
 
@@ -32,7 +30,6 @@ class AppHeader extends StatefulWidget {
 class _AppHeaderState extends State<AppHeader> {
   bool _profilePressed = false;
   bool _notifPressed = false;
-  bool _aiPressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -218,35 +215,6 @@ class _AppHeaderState extends State<AppHeader> {
                             }),
                           ),
                         ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppDimens.gutter),
-
-                  // Sparkle (Tanya AI) Button
-                  GestureDetector(
-                    onTapDown: (_) => setState(() => _aiPressed = true),
-                    onTapUp: (_) => setState(() => _aiPressed = false),
-                    onTapCancel: () => setState(() => _aiPressed = false),
-                    onTap: widget.onAiTap ?? () => Get.toNamed(AppRoutes.ai),
-                    child: AnimatedScale(
-                      scale: _aiPressed ? 0.95 : 1.0,
-                      duration: const Duration(milliseconds: 100),
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: const BoxDecoration(
-                          color: AppColors.surface,
-                          shape: BoxShape.circle,
-                          boxShadow: [AppShadows.standard],
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.auto_awesome_outlined,
-                            size: 20,
-                            color: AppColors.onSurface,
-                          ),
-                        ),
                       ),
                     ),
                   ),

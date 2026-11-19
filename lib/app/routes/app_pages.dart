@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../modules/ai/views/tanya_ai_view.dart';
 import '../modules/attendance/attendance_binding.dart';
 import '../modules/attendance/views/add_attendance_view.dart';
 import '../modules/main_navigation/main_nav_binding.dart';
@@ -151,12 +150,6 @@ class AppPages {
     GetPage(
       name: AppRoutes.notification,
       page: () => const NotificationView(),
-      customTransition: _slideRightFade,
-      transitionDuration: _kTransitionDuration,
-    ),
-    GetPage(
-      name: AppRoutes.ai,
-      page: () => const TanyaAiView(),
       customTransition: _slideRightFade,
       transitionDuration: _kTransitionDuration,
     ),

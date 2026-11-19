@@ -8,7 +8,6 @@ import '../../../global_widgets/empty_state.dart';
 import '../../../global_widgets/page_title_row.dart';
 import '../../../global_widgets/section_label.dart';
 import '../../../routes/app_routes.dart';
-import '../../ai/views/tanya_ai_bottom_sheet.dart';
 import '../note_controller.dart';
 import '../widgets/note_card.dart';
 
@@ -24,9 +23,7 @@ class NoteView extends GetView<NoteController> {
         child: Column(
           children: [
             // Fixed AppHeader (56px, blur + background/90)
-            AppHeader(
-              onAiTap: () => TanyaAiBottomSheet.show(context),
-            ),
+            const AppHeader(),
             const SizedBox(height: 8),
 
             Expanded(

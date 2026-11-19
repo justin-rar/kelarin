@@ -11,7 +11,6 @@ import '../../global_widgets/page_title_row.dart';
 import '../../global_widgets/section_label.dart';
 import '../../global_widgets/stat_tile.dart';
 import '../../routes/app_routes.dart';
-import '../ai/views/tanya_ai_bottom_sheet.dart';
 import '../main_navigation/main_nav_controller.dart';
 import '../task/task_controller.dart';
 import '../task/widgets/task_card.dart';
@@ -58,9 +57,7 @@ class _HomeViewState extends State<HomeView> {
         child: Column(
           children: [
             // Fixed AppHeader (56px, blur + background/90)
-            AppHeader(
-              onAiTap: () => TanyaAiBottomSheet.show(context),
-            ),
+            const AppHeader(),
             const SizedBox(height: 8),
 
             // Scrollable Content

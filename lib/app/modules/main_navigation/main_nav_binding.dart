@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import '../ai/ai_controller.dart';
 import '../attendance/attendance_controller.dart';
 import '../note/note_controller.dart';
 import '../notification/notification_controller.dart';
@@ -15,7 +14,6 @@ class MainNavBinding extends Bindings {
     Get.put<AttendanceController>(AttendanceController(), permanent: true);
     Get.lazyPut<NoteController>(() => NoteController(), fenix: true);
     Get.lazyPut<ProfileController>(() => ProfileController(), fenix: true);
-    Get.lazyPut<AiController>(() => AiController(), fenix: true);
     Get.lazyPut<NotificationController>(() => NotificationController(), fenix: true);
   }
 }
