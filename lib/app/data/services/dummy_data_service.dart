@@ -29,7 +29,7 @@ class DummyDataService {
         category: 'Pekerjaan',
         priority: '= Sedang',
         isCompleted: false,
-        note: 'Bahas backlog fitur Tanya AI dan integrasi GetX.',
+        note: 'Bahas backlog fitur dan integrasi GetX.',
       ),
       TaskModel(
         id: 'task-3',

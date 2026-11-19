@@ -143,7 +143,7 @@ class _AppHeaderState extends State<AppHeader> {
                 ),
               ),
 
-              // Right: Action Buttons (Notification Bell & Tanya AI Sparkle)
+              // Right: Action Buttons (Notification Bell)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
