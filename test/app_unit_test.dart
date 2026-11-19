@@ -152,7 +152,9 @@ void main() {
       time: '08:00 - 09:40 WIB',
       room: 'Lab Komputer 3 (4A)',
       reminderActive: true,
-      scheduledEpoch: DateTime.now().add(const Duration(days: 2)).millisecondsSinceEpoch,
+      scheduledEpoch: DateTime.now()
+          .add(const Duration(days: 2))
+          .millisecondsSinceEpoch,
     );
 
     expect(attendance.day, 'Senin - Jumat');
@@ -166,4 +168,3 @@ void main() {
     expect(reconstructed.scheduledEpoch, attendance.scheduledEpoch);
   });
 }
-

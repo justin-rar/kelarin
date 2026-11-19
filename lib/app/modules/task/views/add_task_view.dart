@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/app_shadows.dart';
@@ -85,7 +86,8 @@ class _AddTaskViewState extends State<AddTaskView> {
 
     final now = DateTime.now();
     // Jika user memilih waktu yang sama dengan menit saat ini (misal saat pengujian):
-    if (taskDateTime.isBefore(now) && now.difference(taskDateTime).inMinutes < 3) {
+    if (taskDateTime.isBefore(now) &&
+        now.difference(taskDateTime).inMinutes < 3) {
       taskDateTime = now.add(const Duration(seconds: 2));
     }
 
@@ -99,7 +101,9 @@ class _AddTaskViewState extends State<AddTaskView> {
       location: '',
       category: selectedCategory,
       priority: selectedPriority,
-      note: noteController.text.trim().isNotEmpty ? noteController.text.trim() : null,
+      note: noteController.text.trim().isNotEmpty
+          ? noteController.text.trim()
+          : null,
     );
 
     controller.addTask(
@@ -144,7 +148,8 @@ class _AddTaskViewState extends State<AddTaskView> {
                   // 2. Catatan Tambahan
                   AppFormField(
                     label: 'Catatan Tambahan',
-                    placeholder: 'Tambahkan instruksi, referensi, atau detail tugas...',
+                    placeholder:
+                        'Tambahkan instruksi, referensi, atau detail tugas...',
                     controller: noteController,
                     maxLines: 4,
                   ),
@@ -181,26 +186,39 @@ class _AddTaskViewState extends State<AddTaskView> {
                               padding: const EdgeInsets.only(bottom: 8),
                               child: Text(
                                 'TANGGAL *',
-                                style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
+                                style: AppTypography.fieldLabel.copyWith(
+                                  color: AppColors.secondary,
+                                ),
                               ),
                             ),
                             GestureDetector(
                               onTap: _pickDate,
                               child: Container(
                                 height: 52,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(AppDimens.radiusInput),
+                                  borderRadius: BorderRadius.circular(
+                                    AppDimens.radiusInput,
+                                  ),
                                   boxShadow: const [AppShadows.field],
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.calendar_today_outlined, size: 18, color: AppColors.secondary),
+                                    const Icon(
+                                      Icons.calendar_today_outlined,
+                                      size: 18,
+                                      color: AppColors.secondary,
+                                    ),
                                     const SizedBox(width: 10),
                                     Text(
-                                      DateFormat('dd/MM/yyyy').format(selectedDate),
-                                      style: AppTypography.bodyDefault.copyWith(fontWeight: FontWeight.w600),
+                                      DateFormat('dd/MM/yyyy')
+                                          .format(selectedDate),
+                                      style: AppTypography.bodyDefault.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -218,26 +236,38 @@ class _AddTaskViewState extends State<AddTaskView> {
                               padding: const EdgeInsets.only(bottom: 8),
                               child: Text(
                                 'WAKTU *',
-                                style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
+                                style: AppTypography.fieldLabel.copyWith(
+                                  color: AppColors.secondary,
+                                ),
                               ),
                             ),
                             GestureDetector(
                               onTap: _pickTime,
                               child: Container(
                                 height: 52,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(AppDimens.radiusInput),
+                                  borderRadius: BorderRadius.circular(
+                                    AppDimens.radiusInput,
+                                  ),
                                   boxShadow: const [AppShadows.field],
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.schedule_outlined, size: 18, color: AppColors.secondary),
+                                    const Icon(
+                                      Icons.schedule_outlined,
+                                      size: 18,
+                                      color: AppColors.secondary,
+                                    ),
                                     const SizedBox(width: 10),
                                     Text(
                                       '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')} WIB',
-                                      style: AppTypography.bodyDefault.copyWith(fontWeight: FontWeight.w600),
+                                      style: AppTypography.bodyDefault.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -255,7 +285,9 @@ class _AddTaskViewState extends State<AddTaskView> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       'PENGINGAT',
-                      style: AppTypography.fieldLabel.copyWith(color: AppColors.secondary),
+                      style: AppTypography.fieldLabel.copyWith(
+                        color: AppColors.secondary,
+                      ),
                     ),
                   ),
                   Container(
@@ -274,28 +306,48 @@ class _AddTaskViewState extends State<AddTaskView> {
                           value: remind1Day,
                           onChanged: (v) => setState(() => remind1Day = v),
                         ),
-                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        const Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: AppColors.divider,
+                        ),
                         ToggleRow(
                           label: '12 jam sebelum',
                           icon: Icons.notifications_none_rounded,
                           value: remind12Hours,
                           onChanged: (v) => setState(() => remind12Hours = v),
                         ),
-                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        const Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: AppColors.divider,
+                        ),
                         ToggleRow(
                           label: '6 jam sebelum',
                           icon: Icons.notifications_none_rounded,
                           value: remind6Hours,
                           onChanged: (v) => setState(() => remind6Hours = v),
                         ),
-                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        const Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: AppColors.divider,
+                        ),
                         ToggleRow(
                           label: '3 jam sebelum',
                           icon: Icons.notifications_none_rounded,
                           value: remind3Hours,
                           onChanged: (v) => setState(() => remind3Hours = v),
                         ),
-                        const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.divider),
+                        const Divider(
+                          height: 1,
+                          indent: 16,
+                          endIndent: 16,
+                          color: AppColors.divider,
+                        ),
                         ToggleRow(
                           label: '1 jam sebelum',
                           icon: Icons.notifications_none_rounded,
