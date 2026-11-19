@@ -95,10 +95,12 @@ class NotificationService extends GetxService {
         'Kelarin Notifications',
         channelDescription: 'Pengingat tugas dan absensi Kelarin',
         importance: Importance.max,
-        priority: Priority.high,
+        priority: Priority.max,
         playSound: true,
         sound: RawResourceAndroidNotificationSound(soundResourceName),
         enableVibration: true,
+        visibility: NotificationVisibility.public,
+        category: AndroidNotificationCategory.reminder,
         icon: '@mipmap/ic_launcher',
       );
 
@@ -127,17 +129,16 @@ class NotificationService extends GetxService {
     try {
       final now = DateTime.now();
 
-      // Jika waktu sudah lewat lebih dari 30 detik yang lalu, jangan jadwalkan
-      if (scheduledDate.isBefore(now.subtract(const Duration(seconds: 30)))) {
-        debugPrint('Waktu notifikasi sudah lewat: $scheduledDate');
-        return;
-      }
-
-      // Jika waktu penjadwalan tepat saat ini atau dalam 5 detik ke depan,
-      // langsung munculkan notifikasi agar user langsung melihatnya
-      if (scheduledDate.isBefore(now.add(const Duration(seconds: 5)))) {
-        await showNotification(id: id, title: title, body: body);
-        return;
+      // Jika waktu penjadwalan tepat saat ini, baru saja lewat (< 5 menit), atau dalam 10 detik ke depan:
+      // langsung munculkan notifikasi agar user langsung melihat dan mendengarnya!
+      if (scheduledDate.isBefore(now.add(const Duration(seconds: 10)))) {
+        if (now.difference(scheduledDate).inMinutes < 5) {
+          await showNotification(id: id, title: title, body: body);
+          return;
+        } else {
+          debugPrint('Waktu notifikasi sudah lewat: $scheduledDate');
+          return;
+        }
       }
 
       const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
@@ -145,10 +146,12 @@ class NotificationService extends GetxService {
         'Kelarin Notifications',
         channelDescription: 'Pengingat tugas dan absensi Kelarin',
         importance: Importance.max,
-        priority: Priority.high,
+        priority: Priority.max,
         playSound: true,
         sound: RawResourceAndroidNotificationSound(soundResourceName),
         enableVibration: true,
+        visibility: NotificationVisibility.public,
+        category: AndroidNotificationCategory.reminder,
         icon: '@mipmap/ic_launcher',
       );
 

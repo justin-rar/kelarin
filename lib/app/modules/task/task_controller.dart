@@ -220,7 +220,7 @@ class TaskController extends GetxController {
     final baseId = _taskNotifId(task.id);
 
     // 1. Notifikasi tenggat tugas
-    if (task.dateTime.isAfter(now)) {
+    if (task.dateTime.isAfter(now) || now.difference(task.dateTime).inMinutes < 3) {
       try {
         await _notifications.scheduleNotification(
           id: baseId,
@@ -325,7 +325,7 @@ class TaskController extends GetxController {
 
     final now = DateTime.now();
     if (!task.isCompleted) {
-      if (task.dateTime.isAfter(now)) {
+      if (task.dateTime.isAfter(now) || now.difference(task.dateTime).inMinutes < 3) {
         try {
           await _notifications.scheduleNotification(
             id: baseId,

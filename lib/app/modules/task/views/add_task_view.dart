@@ -75,13 +75,19 @@ class _AddTaskViewState extends State<AddTaskView> {
       return;
     }
 
-    final taskDateTime = DateTime(
+    var taskDateTime = DateTime(
       selectedDate.year,
       selectedDate.month,
       selectedDate.day,
       selectedTime.hour,
       selectedTime.minute,
     );
+
+    final now = DateTime.now();
+    // Jika user memilih waktu yang sama dengan menit saat ini (misal saat pengujian):
+    if (taskDateTime.isBefore(now) && now.difference(taskDateTime).inMinutes < 3) {
+      taskDateTime = now.add(const Duration(seconds: 2));
+    }
 
     final timeString = DateFormat('d MMM, HH:mm').format(taskDateTime);
 

@@ -45,8 +45,8 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
     'Jumat',
   ];
 
-  // Set pilihan hari (default: Senin)
-  final Set<String> selectedDays = {'Senin'};
+  // Set pilihan hari (default: hari ini)
+  late final Set<String> selectedDays;
   TimeOfDay selectedTime = const TimeOfDay(hour: 8, minute: 0);
 
   String selectedType = 'Praktikum';
@@ -61,6 +61,10 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
   @override
   void initState() {
     super.initState();
+    // Default ke hari ini agar penambahan jadwal & testing notifikasi langsung relevan hari ini
+    final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
+    selectedDays = {_allDays[todayIdx]};
+
     controller = Get.isRegistered<AttendanceController>()
         ? Get.find<AttendanceController>()
         : Get.put(AttendanceController(), permanent: true);
@@ -140,8 +144,18 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
         time.minute,
       );
 
-      // Jika waktu hari ini sudah terlewat, lompat ke minggu depan
-      if (candidate.isBefore(now)) {
+      // Jika hari yang dipilih adalah HARI INI:
+      if (daysUntil == 0) {
+        if (candidate.isBefore(now)) {
+          // Jika waktu yang dipilih baru saja terlewat atau dalam toleransi 3 menit (misal saat testing):
+          if (now.difference(candidate).inMinutes < 3) {
+            candidate = now.add(const Duration(seconds: 2));
+          } else {
+            // Sudah lewat jamnya hari ini (misal kuliah pagi, sekarang sore): jadwalkan minggu depan
+            candidate = candidate.add(const Duration(days: 7));
+          }
+        }
+      } else if (candidate.isBefore(now)) {
         candidate = candidate.add(const Duration(days: 7));
       }
 
@@ -150,7 +164,22 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
       }
     }
 
-    return earliest ?? now.add(const Duration(days: 1));
+    return earliest ?? now.add(const Duration(seconds: 2));
+  }
+
+  String _formatNextReminderPreview() {
+    if (selectedDays.isEmpty) return '-';
+    final next = _getNextOccurrenceForDays(selectedDays, selectedTime);
+    final now = DateTime.now();
+    final isToday = next.year == now.year && next.month == now.month && next.day == now.day;
+    final timeStr = '${next.hour.toString().padLeft(2, '0')}:${next.minute.toString().padLeft(2, '0')} WIB';
+    if (isToday) {
+      return 'Hari ini, $timeStr';
+    }
+    const dayNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    final dayName = dayNames[(next.weekday - 1).clamp(0, 6)];
+    final dateStr = '${next.day}/${next.month}';
+    return '$dayName ($dateStr), $timeStr';
   }
 
   void _saveAttendance() {
@@ -395,6 +424,35 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Info preview pengingat berikutnya
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.fill1,
+                      borderRadius: BorderRadius.circular(AppDimens.radiusCard),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.notifications_active_outlined,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Pengingat berikutnya: ${_formatNextReminderPreview()}',
+                            style: AppTypography.captionMeta.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 16),
