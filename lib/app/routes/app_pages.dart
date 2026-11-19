@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../modules/ai/views/tanya_ai_view.dart';
 import '../modules/attendance/attendance_binding.dart';
@@ -24,6 +25,35 @@ import '../modules/task/views/edit_task_view.dart';
 import '../modules/task/views/task_detail_view.dart';
 import 'app_routes.dart';
 
+// Durasi & kurva transisi standar seluruh aplikasi
+const Duration _kTransitionDuration = Duration(milliseconds: 320);
+const Curve _kTransitionCurve = Curves.easeInOutCubic;
+
+/// Custom transition: slide dari kanan + fade, dengan kurva yang smooth
+CustomTransition get _slideRightFade => _SlideFadeTransition();
+
+class _SlideFadeTransition extends CustomTransition {
+  @override
+  Widget buildTransition(
+    BuildContext context,
+    Curve? curve,
+    Alignment? alignment,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final slideIn = Tween<Offset>(
+      begin: const Offset(0.06, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: animation, curve: _kTransitionCurve));
+
+    return FadeTransition(
+      opacity: CurvedAnimation(parent: animation, curve: _kTransitionCurve),
+      child: SlideTransition(position: slideIn, child: child),
+    );
+  }
+}
+
 class AppPages {
   AppPages._();
 
@@ -40,81 +70,95 @@ class AppPages {
       page: () => const OnboardingView(),
       binding: OnboardingBinding(),
       transition: Transition.fadeIn,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.pin,
       page: () => const PinView(),
       binding: PinBinding(),
       transition: Transition.fadeIn,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.main,
       page: () => const MainNavigationView(),
       binding: MainNavBinding(),
       transition: Transition.fadeIn,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.taskAdd,
       page: () => const AddTaskView(),
       binding: TaskBinding(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.taskEdit,
       page: () => const EditTaskView(),
       binding: TaskBinding(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.taskDetail,
       page: () => const TaskDetailView(),
       binding: TaskBinding(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.attendanceAdd,
       page: () => const AddAttendanceView(),
       binding: AttendanceBinding(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.noteAdd,
       page: () => const AddNoteView(),
       binding: NoteBinding(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.noteEdit,
       page: () => const EditNoteView(),
       binding: NoteBinding(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.profile,
       page: () => const ProfileView(),
       binding: ProfileBinding(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.profileEdit,
       page: () => const EditProfileView(),
       binding: ProfileBinding(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.profileAbout,
       page: () => const AboutView(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.notification,
       page: () => const NotificationView(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
     GetPage(
       name: AppRoutes.ai,
       page: () => const TanyaAiView(),
-      transition: Transition.rightToLeftWithFade,
+      customTransition: _slideRightFade,
+      transitionDuration: _kTransitionDuration,
     ),
   ];
 }

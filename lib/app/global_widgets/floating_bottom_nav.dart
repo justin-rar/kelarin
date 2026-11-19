@@ -55,7 +55,7 @@ class FloatingBottomNav extends StatelessWidget {
             label: 'Selesai',
           ),
 
-          // Center Button: [+] or [x] when Aksi Cepat is open
+          // Center Button: [+] / [x] dengan animasi rotasi
           GestureDetector(
             onTap: onAddTap,
             child: Container(
@@ -68,13 +68,24 @@ class FloatingBottomNav extends StatelessWidget {
                 boxShadow: const [AppShadows.cta],
               ),
               child: Center(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 150),
-                  child: Icon(
-                    isAksiCepatOpen ? Icons.close : Icons.add,
-                    key: ValueKey<bool>(isAksiCepatOpen),
-                    color: AppColors.onPrimary,
-                    size: 28,
+                child: AnimatedRotation(
+                  turns: isAksiCepatOpen ? 0.125 : 0.0, // 45 derajat
+                  duration: const Duration(milliseconds: 280),
+                  curve: Curves.easeInOutBack,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    switchInCurve: Curves.easeOut,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: (child, animation) => ScaleTransition(
+                      scale: animation,
+                      child: FadeTransition(opacity: animation, child: child),
+                    ),
+                    child: Icon(
+                      isAksiCepatOpen ? Icons.close : Icons.add,
+                      key: ValueKey<bool>(isAksiCepatOpen),
+                      color: AppColors.onPrimary,
+                      size: 28,
+                    ),
                   ),
                 ),
               ),
@@ -116,27 +127,40 @@ class FloatingBottomNav extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              isActive ? activeIcon : icon,
-              size: 24,
-              color: isActive ? AppColors.primary : AppColors.outline,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              switchInCurve: Curves.easeOut,
+              transitionBuilder: (child, animation) => ScaleTransition(
+                scale: Tween<double>(begin: 0.75, end: 1.0).animate(animation),
+                child: FadeTransition(opacity: animation, child: child),
+              ),
+              child: Icon(
+                isActive ? activeIcon : icon,
+                key: ValueKey<bool>(isActive),
+                size: 24,
+                color: isActive ? AppColors.primary : AppColors.outline,
+              ),
             ),
             const SizedBox(height: 2),
-            Text(
-              label,
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
               style: AppTypography.navLabel.copyWith(
                 color: isActive ? AppColors.primary : AppColors.outline,
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
               ),
+              child: Text(label),
             ),
             const SizedBox(height: 3),
             // 4px black active dot indicator
-            Container(
-              width: 4,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              width: isActive ? 4 : 0,
               height: 4,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: isActive ? AppColors.primary : Colors.transparent,
+                color: AppColors.primary,
               ),
             ),
           ],
@@ -145,3 +169,4 @@ class FloatingBottomNav extends StatelessWidget {
     );
   }
 }
+

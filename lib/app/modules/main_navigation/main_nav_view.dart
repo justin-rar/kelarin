@@ -25,13 +25,25 @@ class MainNavigationView extends GetView<MainNavController> {
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Current Tab Page View
-          Obx(() => IndexedStack(
-                index: controller.currentIndex.value,
-                children: pages,
-              )),
+          // Current Tab — smooth fade antar tab
+          Obx(() {
+            final idx = controller.currentIndex.value;
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
+              child: KeyedSubtree(
+                key: ValueKey<int>(idx),
+                child: pages[idx],
+              ),
+            );
+          }),
 
-          // Aksi Cepat Overlay (Opens above nav, behind crisp header and FAB)
+          // Aksi Cepat Overlay dengan animasi slide-up + fade
           Obx(() {
             if (controller.isAksiCepatOpen.value) {
               return QuickActionSheet(
@@ -58,3 +70,4 @@ class MainNavigationView extends GetView<MainNavController> {
     );
   }
 }
+
