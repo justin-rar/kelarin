@@ -26,7 +26,6 @@ class _EditTaskViewState extends State<EditTaskView> {
   late TaskModel task;
 
   late TextEditingController titleController;
-  late TextEditingController locationController;
   late TextEditingController noteController;
 
   late DateTime selectedDate;
@@ -68,7 +67,6 @@ class _EditTaskViewState extends State<EditTaskView> {
       );
     }
     titleController = TextEditingController(text: task.title);
-    locationController = TextEditingController(text: task.location);
     noteController = TextEditingController(text: task.note ?? '');
 
     selectedDate = task.dateTime;
@@ -80,7 +78,6 @@ class _EditTaskViewState extends State<EditTaskView> {
   @override
   void dispose() {
     titleController.dispose();
-    locationController.dispose();
     noteController.dispose();
     super.dispose();
   }
@@ -112,7 +109,7 @@ class _EditTaskViewState extends State<EditTaskView> {
       title: title,
       dateTime: taskDateTime,
       timeString: timeString,
-      location: locationController.text.trim(),
+      location: task.location,
       category: selectedCategory,
       priority: selectedPriority,
       note: noteController.text.trim().isNotEmpty ? noteController.text.trim() : null,
@@ -166,7 +163,16 @@ class _EditTaskViewState extends State<EditTaskView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 2. Kategori *
+                  // 2. Catatan Tambahan
+                  AppFormField(
+                    label: 'Catatan Tambahan',
+                    placeholder: 'Tambahkan instruksi, referensi, atau detail tugas...',
+                    controller: noteController,
+                    maxLines: 4,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 3. Kategori *
                   SegmentedSelector(
                     label: 'Kategori *',
                     options: categories,
@@ -176,7 +182,7 @@ class _EditTaskViewState extends State<EditTaskView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 3. Prioritas *
+                  // 4. Prioritas *
                   SegmentedSelector(
                     label: 'Prioritas *',
                     options: priorities,
@@ -186,7 +192,7 @@ class _EditTaskViewState extends State<EditTaskView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 4. Tanggal & Waktu (2 Columns)
+                  // 5. Tanggal & Waktu (2 Columns)
                   Row(
                     children: [
                       Expanded(
@@ -266,20 +272,6 @@ class _EditTaskViewState extends State<EditTaskView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 5. Lokasi
-                  AppFormField(
-                    label: 'Lokasi',
-                    placeholder: 'Nama gedung, ruangan, atau link meet...',
-                    prefixIcon: Icons.location_on_outlined,
-                    controller: locationController,
-                    linkText: 'Gunakan lokasi saat ini',
-                    linkIcon: Icons.near_me_outlined,
-                    onLinkTap: () {
-                      locationController.text = 'Gedung Kuliah Bersama, R. 302';
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
                   // 6. Pengingat (Card 24px with ToggleRows)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -334,15 +326,6 @@ class _EditTaskViewState extends State<EditTaskView> {
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 7. Catatan
-                  AppFormField(
-                    label: 'Catatan Tambahan',
-                    placeholder: 'Tambahkan instruksi, referensi, atau detail tugas...',
-                    controller: noteController,
-                    maxLines: 4,
                   ),
                   const SizedBox(height: 24),
                 ],

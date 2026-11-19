@@ -24,7 +24,6 @@ class _AddTaskViewState extends State<AddTaskView> {
   late final TaskController controller;
 
   final TextEditingController titleController = TextEditingController();
-  final TextEditingController locationController = TextEditingController();
   final TextEditingController noteController = TextEditingController();
 
   DateTime selectedDate = DateTime.now();
@@ -54,7 +53,6 @@ class _AddTaskViewState extends State<AddTaskView> {
   @override
   void dispose() {
     titleController.dispose();
-    locationController.dispose();
     noteController.dispose();
     super.dispose();
   }
@@ -87,7 +85,7 @@ class _AddTaskViewState extends State<AddTaskView> {
       title: title,
       dateTime: taskDateTime,
       timeString: timeString,
-      location: locationController.text.trim(),
+      location: '',
       category: selectedCategory,
       priority: selectedPriority,
       note: noteController.text.trim().isNotEmpty ? noteController.text.trim() : null,
@@ -125,7 +123,16 @@ class _AddTaskViewState extends State<AddTaskView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 2. Kategori *
+                  // 2. Catatan Tambahan
+                  AppFormField(
+                    label: 'Catatan Tambahan',
+                    placeholder: 'Tambahkan instruksi, referensi, atau detail tugas...',
+                    controller: noteController,
+                    maxLines: 4,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 3. Kategori *
                   SegmentedSelector(
                     label: 'Kategori *',
                     options: categories,
@@ -135,7 +142,7 @@ class _AddTaskViewState extends State<AddTaskView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 3. Prioritas *
+                  // 4. Prioritas *
                   SegmentedSelector(
                     label: 'Prioritas *',
                     options: priorities,
@@ -145,7 +152,7 @@ class _AddTaskViewState extends State<AddTaskView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 4. Tanggal & Waktu (2 Columns)
+                  // 5. Tanggal & Waktu (2 Columns)
                   Row(
                     children: [
                       Expanded(
@@ -225,20 +232,6 @@ class _AddTaskViewState extends State<AddTaskView> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 5. Lokasi
-                  AppFormField(
-                    label: 'Lokasi',
-                    placeholder: 'Nama gedung, ruangan, atau link meet...',
-                    prefixIcon: Icons.location_on_outlined,
-                    controller: locationController,
-                    linkText: 'Gunakan lokasi saat ini',
-                    linkIcon: Icons.near_me_outlined,
-                    onLinkTap: () {
-                      locationController.text = 'Gedung Kuliah Bersama, R. 302';
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
                   // 6. Pengingat (Card 24px with ToggleRows)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -293,15 +286,6 @@ class _AddTaskViewState extends State<AddTaskView> {
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 7. Catatan (Textarea min 110px)
-                  AppFormField(
-                    label: 'Catatan Tambahan',
-                    placeholder: 'Tambahkan instruksi, referensi, atau detail tugas...',
-                    controller: noteController,
-                    maxLines: 4,
                   ),
                   const SizedBox(height: 24),
                 ],
