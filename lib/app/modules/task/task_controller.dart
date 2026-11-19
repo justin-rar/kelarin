@@ -27,7 +27,8 @@ class TaskController extends GetxController {
     super.onInit();
     final now = DateTime.now();
     completedFilterMonth = now.month.obs;
-    completedFilterYear = now.year.obs;
+    final defaultYear = (now.year >= 2026 && now.year <= 2045) ? now.year : 2026;
+    completedFilterYear = defaultYear.obs;
     loadTasks();
   }
 
@@ -90,8 +91,11 @@ class TaskController extends GetxController {
     return completedTasks.where((t) {
       // Filter bulan & tahun
       final date = t.completedAt ?? t.dateTime;
-      if (date.month != completedFilterMonth.value ||
-          date.year != completedFilterYear.value) {
+      if (date.year != completedFilterYear.value) {
+        return false;
+      }
+      if (completedFilterMonth.value != 0 &&
+          date.month != completedFilterMonth.value) {
         return false;
       }
 
