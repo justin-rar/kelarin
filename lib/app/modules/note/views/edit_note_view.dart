@@ -48,8 +48,6 @@ class _EditNoteViewState extends State<EditNoteView> {
     titleController = TextEditingController(text: note.title);
     contentController = TextEditingController(text: note.content);
     isPinned = note.isPinned;
-
-    contentController.addListener(() => setState(() {}));
   }
 
   @override
@@ -57,12 +55,6 @@ class _EditNoteViewState extends State<EditNoteView> {
     titleController.dispose();
     contentController.dispose();
     super.dispose();
-  }
-
-  int get wordCount {
-    final text = contentController.text.trim();
-    if (text.isEmpty) return 0;
-    return text.split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length;
   }
 
   void _updateNote() {
@@ -105,27 +97,6 @@ class _EditNoteViewState extends State<EditNoteView> {
         Get.back(); // close edit screen
       },
     );
-  }
-
-  void _insertFormatting(String prefix, [String suffix = '']) {
-    final text = contentController.text;
-    final selection = contentController.selection;
-    if (selection.isValid && selection.start >= 0 && selection.end >= 0) {
-      final selectedText = text.substring(selection.start, selection.end);
-      final newText = text.replaceRange(
-        selection.start,
-        selection.end,
-        '$prefix$selectedText$suffix',
-      );
-      contentController.value = TextEditingValue(
-        text: newText,
-        selection: TextSelection.collapsed(
-          offset: selection.start + prefix.length + selectedText.length + suffix.length,
-        ),
-      );
-    } else {
-      contentController.text = '$text\n$prefix$suffix';
-    }
   }
 
   @override
@@ -267,74 +238,9 @@ class _EditNoteViewState extends State<EditNoteView> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
 
-                  // 2. Formatting Dock Card (16px radius, surface, standard shadow)
-                  Container(
-                    height: 52,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppDimens.radius2Xl),
-                      boxShadow: const [AppShadows.standard],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                IconButton(
-                                  icon: const Text('B', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
-                                  onPressed: () => _insertFormatting('**', '**'),
-                                  tooltip: 'Tebal',
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.format_list_bulleted, size: 20),
-                                  onPressed: () => _insertFormatting('- '),
-                                  tooltip: 'Daftar',
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.check_box_outlined, size: 20),
-                                  onPressed: () => _insertFormatting('- [ ] '),
-                                  tooltip: 'Checklist',
-                                ),
-                                IconButton(
-                                  icon: Icon(
-                                    isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                                    size: 20,
-                                    color: isPinned ? AppColors.primary : AppColors.secondary,
-                                  ),
-                                  onPressed: () => setState(() => isPinned = !isPinned),
-                                  tooltip: 'Sematkan',
-                                ),
-                                const VerticalDivider(width: 8, indent: 14, endIndent: 14, color: AppColors.divider),
-                                IconButton(
-                                  icon: const Icon(Icons.image_outlined, size: 20),
-                                  onPressed: () => _insertFormatting('![Gambar](url)'),
-                                  tooltip: 'Gambar',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Text(
-                            '$wordCount kata',
-                            style: AppTypography.captionMeta.copyWith(
-                              color: AppColors.outline,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // 3. Ambient Guidance
+                  // 2. Ambient Guidance
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
