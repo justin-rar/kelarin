@@ -244,44 +244,49 @@ class _AddNoteViewState extends State<AddNoteView> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            // Bold button
-                            IconButton(
-                              icon: const Text('B', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
-                              onPressed: () => _insertFormatting('**', '**'),
-                              tooltip: 'Tebal',
+                        Flexible(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                // Bold button
+                                IconButton(
+                                  icon: const Text('B', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+                                  onPressed: () => _insertFormatting('**', '**'),
+                                  tooltip: 'Tebal',
+                                ),
+                                // Bullet list button
+                                IconButton(
+                                  icon: const Icon(Icons.format_list_bulleted, size: 20),
+                                  onPressed: () => _insertFormatting('- '),
+                                  tooltip: 'Daftar',
+                                ),
+                                // Checklist button
+                                IconButton(
+                                  icon: const Icon(Icons.check_box_outlined, size: 20),
+                                  onPressed: () => _insertFormatting('- [ ] '),
+                                  tooltip: 'Checklist',
+                                ),
+                                // Pin toggle button
+                                IconButton(
+                                  icon: Icon(
+                                    isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                                    size: 20,
+                                    color: isPinned ? AppColors.primary : AppColors.secondary,
+                                  ),
+                                  onPressed: () => setState(() => isPinned = !isPinned),
+                                  tooltip: 'Sematkan',
+                                ),
+                                const VerticalDivider(width: 8, indent: 14, endIndent: 14, color: AppColors.divider),
+                                // Attach image placeholder
+                                IconButton(
+                                  icon: const Icon(Icons.image_outlined, size: 20),
+                                  onPressed: () => _insertFormatting('![Gambar](url)'),
+                                  tooltip: 'Gambar',
+                                ),
+                              ],
                             ),
-                            // Bullet list button
-                            IconButton(
-                              icon: const Icon(Icons.format_list_bulleted, size: 20),
-                              onPressed: () => _insertFormatting('- '),
-                              tooltip: 'Daftar',
-                            ),
-                            // Checklist button
-                            IconButton(
-                              icon: const Icon(Icons.check_box_outlined, size: 20),
-                              onPressed: () => _insertFormatting('- [ ] '),
-                              tooltip: 'Checklist',
-                            ),
-                            // Pin toggle button
-                            IconButton(
-                              icon: Icon(
-                                isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                                size: 20,
-                                color: isPinned ? AppColors.primary : AppColors.secondary,
-                              ),
-                              onPressed: () => setState(() => isPinned = !isPinned),
-                              tooltip: 'Sematkan',
-                            ),
-                            const VerticalDivider(width: 8, indent: 14, endIndent: 14, color: AppColors.divider),
-                            // Attach image placeholder
-                            IconButton(
-                              icon: const Icon(Icons.image_outlined, size: 20),
-                              onPressed: () => _insertFormatting('![Gambar](url)'),
-                              tooltip: 'Gambar',
-                            ),
-                          ],
+                          ),
                         ),
                         // Word count
                         Padding(
@@ -304,11 +309,16 @@ class _AddNoteViewState extends State<AddNoteView> {
                     children: [
                       const Icon(Icons.lock_outline, size: 14, color: AppColors.outline),
                       const SizedBox(width: 6),
-                      Text(
-                        'Enkripsi lokal aktif • Hanya Anda yang dapat membaca catatan ini',
-                        style: AppTypography.captionMeta.copyWith(
-                          fontSize: 11,
-                          color: AppColors.outline,
+                      Flexible(
+                        child: Text(
+                          'Enkripsi lokal aktif • Hanya Anda yang dapat membaca catatan ini',
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.captionMeta.copyWith(
+                            fontSize: 10.5,
+                            color: AppColors.outline,
+                          ),
                         ),
                       ),
                     ],
