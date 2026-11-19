@@ -8,12 +8,16 @@ import 'package:timezone/timezone.dart' as tz;
 class NotificationService extends GetxService {
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
 
+  static const String channelId = 'kelarin_channel_v2';
+  static const String soundResourceName = 'kelarinnotificationsound';
+
   static const AndroidNotificationChannel _defaultChannel = AndroidNotificationChannel(
-    'kelarin_channel',
+    channelId,
     'Kelarin Notifications',
     description: 'Pengingat tugas dan absensi Kelarin',
     importance: Importance.max,
     playSound: true,
+    sound: RawResourceAndroidNotificationSound(soundResourceName),
     enableVibration: true,
   );
 
@@ -48,10 +52,15 @@ class NotificationService extends GetxService {
 
       await _plugin.initialize(initSettings);
 
-      // 3. Buat Notification Channel untuk Android 8.0+
+      // 3. Buat Notification Channel untuk Android 8.0+ dengan suara custom
       final androidImplementation = _plugin
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       if (androidImplementation != null) {
+        try {
+          // Hapus channel versi lama agar pengaturan suara custom langsung berlaku
+          await androidImplementation.deleteNotificationChannel('kelarin_channel');
+        } catch (_) {}
+
         await androidImplementation.createNotificationChannel(_defaultChannel);
         await androidImplementation.requestNotificationsPermission();
         await androidImplementation.requestExactAlarmsPermission();
@@ -82,17 +91,20 @@ class NotificationService extends GetxService {
   }) async {
     try {
       const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-        'kelarin_channel',
+        channelId,
         'Kelarin Notifications',
         channelDescription: 'Pengingat tugas dan absensi Kelarin',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
+        sound: RawResourceAndroidNotificationSound(soundResourceName),
         enableVibration: true,
         icon: '@mipmap/ic_launcher',
       );
 
-      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
+      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+        sound: 'kelarinnotificationsound.mp3',
+      );
 
       const NotificationDetails details = NotificationDetails(
         android: androidDetails,
@@ -129,17 +141,20 @@ class NotificationService extends GetxService {
       }
 
       const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-        'kelarin_channel',
+        channelId,
         'Kelarin Notifications',
         channelDescription: 'Pengingat tugas dan absensi Kelarin',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
+        sound: RawResourceAndroidNotificationSound(soundResourceName),
         enableVibration: true,
         icon: '@mipmap/ic_launcher',
       );
 
-      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
+      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+        sound: 'kelarinnotificationsound.mp3',
+      );
 
       const NotificationDetails details = NotificationDetails(
         android: androidDetails,
