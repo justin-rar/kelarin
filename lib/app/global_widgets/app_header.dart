@@ -65,7 +65,7 @@ class _AppHeaderState extends State<AppHeader> {
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           height: 56,
-          color: AppColors.background.withOpacity(0.90),
+          color: AppColors.background.withValues(alpha: 0.90),
           padding: const EdgeInsets.symmetric(horizontal: AppDimens.margin),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

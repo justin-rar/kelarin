@@ -55,7 +55,7 @@ class FloatingBottomNav extends StatelessWidget {
             label: 'Selesai',
           ),
 
-          // Center Button: [+] / [x] dengan animasi rotasi
+          // Center Button: rotasi smooth + → ×
           GestureDetector(
             onTap: onAddTap,
             child: Container(
@@ -69,23 +69,13 @@ class FloatingBottomNav extends StatelessWidget {
               ),
               child: Center(
                 child: AnimatedRotation(
-                  turns: isAksiCepatOpen ? 0.125 : 0.0, // 45 derajat
-                  duration: const Duration(milliseconds: 280),
+                  turns: isAksiCepatOpen ? 0.125 : 0.0, // 0° → 45°
+                  duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOutBack,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    switchInCurve: Curves.easeOut,
-                    switchOutCurve: Curves.easeIn,
-                    transitionBuilder: (child, animation) => ScaleTransition(
-                      scale: animation,
-                      child: FadeTransition(opacity: animation, child: child),
-                    ),
-                    child: Icon(
-                      isAksiCepatOpen ? Icons.close : Icons.add,
-                      key: ValueKey<bool>(isAksiCepatOpen),
-                      color: AppColors.onPrimary,
-                      size: 28,
-                    ),
+                  child: const Icon(
+                    Icons.add,
+                    color: AppColors.onPrimary,
+                    size: 28,
                   ),
                 ),
               ),

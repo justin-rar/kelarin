@@ -42,7 +42,7 @@ class _FormTopBarState extends State<FormTopBar> {
     return Container(
       height: 64,
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.90),
+        color: AppColors.background.withValues(alpha: 0.90),
         boxShadow: const [AppShadows.topBar],
       ),
       child: ClipRect(

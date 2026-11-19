@@ -58,7 +58,7 @@ class _StickyActionBarState extends State<StickyActionBar> {
         filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.background.withOpacity(0.92),
+            color: AppColors.background.withValues(alpha: 0.92),
             boxShadow: const [AppShadows.stickyActionBar],
           ),
           padding: const EdgeInsets.only(
