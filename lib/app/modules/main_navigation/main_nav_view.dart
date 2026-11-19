@@ -43,26 +43,17 @@ class MainNavigationView extends GetView<MainNavController> {
             );
           }),
 
-          // Aksi Cepat Overlay — AnimatedSwitcher untuk enter & exit yang smooth
+          // Aksi Cepat Overlay — Fade masuk responsif instan tanpa lag blur
           Obx(() {
             final isOpen = controller.isAksiCepatOpen.value;
             return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 280),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, animation) {
-                final slideAnim = Tween<Offset>(
-                  begin: const Offset(0, 0.06),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ));
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(position: slideAnim, child: child),
-                );
-              },
+              duration: const Duration(milliseconds: 180),
+              switchInCurve: Curves.easeOutQuad,
+              switchOutCurve: Curves.easeInQuad,
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
               child: isOpen
                   ? QuickActionSheet(
                       key: const ValueKey('aksi-cepat'),

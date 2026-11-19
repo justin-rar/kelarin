@@ -8,22 +8,52 @@ import '../core/theme/app_typography.dart';
 import '../routes/app_routes.dart';
 
 /// QuickActionSheet (Aksi Cepat) overlay.
-/// Animasi enter/exit dihandle oleh AnimatedSwitcher di MainNavigationView.
-/// Floats above the bottom navigation bar with a 40% scrim and 4px blur.
-/// 28px radius white card, sheet shadow, 3 quick action items.
-class QuickActionSheet extends StatelessWidget {
+/// Animasi backdrop blur fade instan dan slide halus pada kartu.
+class QuickActionSheet extends StatefulWidget {
   final VoidCallback onClose;
 
   const QuickActionSheet({super.key, required this.onClose});
 
   @override
+  State<QuickActionSheet> createState() => _QuickActionSheetState();
+}
+
+class _QuickActionSheetState extends State<QuickActionSheet>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _cardController;
+  late final Animation<Offset> _cardSlideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _cardController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+    );
+    _cardSlideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _cardController,
+      curve: Curves.easeOutCubic,
+    ));
+    _cardController.forward();
+  }
+
+  @override
+  void dispose() {
+    _cardController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // 40% Scrim dengan blur
+        // 40% Scrim dengan blur statis (bebas delay & bebas lag)
         Positioned.fill(
           child: GestureDetector(
-            onTap: onClose,
+            onTap: widget.onClose,
             behavior: HitTestBehavior.opaque,
             child: ClipRect(
               child: BackdropFilter(
@@ -34,73 +64,76 @@ class QuickActionSheet extends StatelessWidget {
           ),
         ),
 
-        // Floating card
+        // Floating card dengan animasi slide halus
         Positioned(
           left: AppDimens.margin,
           right: AppDimens.margin,
           bottom: 104,
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppDimens.radiusSheet),
-              boxShadow: const [AppShadows.sheet],
-              border: Border.all(
-                  color: AppColors.divider.withValues(alpha: 0.6), width: 1),
-            ),
-            padding: const EdgeInsets.all(AppDimens.spaceLg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'AKSI CEPAT',
-                      style: AppTypography.fieldLabel.copyWith(
-                        color: AppColors.primary,
-                        letterSpacing: 0.8,
+          child: SlideTransition(
+            position: _cardSlideAnimation,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppDimens.radiusSheet),
+                boxShadow: const [AppShadows.sheet],
+                border: Border.all(
+                    color: AppColors.divider.withValues(alpha: 0.6), width: 1),
+              ),
+              padding: const EdgeInsets.all(AppDimens.spaceLg),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'AKSI CEPAT',
+                        style: AppTypography.fieldLabel.copyWith(
+                          color: AppColors.primary,
+                          letterSpacing: 0.8,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Pilih tindakan',
-                      style: AppTypography.captionMeta
-                          .copyWith(color: AppColors.secondary),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                const Divider(height: 1, color: AppColors.divider),
-                const SizedBox(height: 8),
-                _buildActionRow(
-                  icon: Icons.task_alt,
-                  title: 'Tambah Tugas',
-                  subtitle: 'Buat to-do & agenda kuliah',
-                  onTap: () {
-                    onClose();
-                    Get.toNamed(AppRoutes.taskAdd);
-                  },
-                ),
-                const SizedBox(height: 6),
-                _buildActionRow(
-                  icon: Icons.calendar_today,
-                  title: 'Tambah Absen',
-                  subtitle: 'Pengingat presensi kelas',
-                  onTap: () {
-                    onClose();
-                    Get.toNamed(AppRoutes.attendanceAdd);
-                  },
-                ),
-                const SizedBox(height: 6),
-                _buildActionRow(
-                  icon: Icons.edit_note,
-                  title: 'Catatan Baru',
-                  subtitle: 'Tulis materi atau ide',
-                  onTap: () {
-                    onClose();
-                    Get.toNamed(AppRoutes.noteAdd);
-                  },
-                ),
-              ],
+                      Text(
+                        'Pilih tindakan',
+                        style: AppTypography.captionMeta
+                            .copyWith(color: AppColors.secondary),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1, color: AppColors.divider),
+                  const SizedBox(height: 8),
+                  _buildActionRow(
+                    icon: Icons.task_alt,
+                    title: 'Tambah Tugas',
+                    subtitle: 'Buat to-do & agenda kuliah',
+                    onTap: () {
+                      widget.onClose();
+                      Get.toNamed(AppRoutes.taskAdd);
+                    },
+                  ),
+                  const SizedBox(height: 6),
+                  _buildActionRow(
+                    icon: Icons.calendar_today,
+                    title: 'Tambah Absen',
+                    subtitle: 'Pengingat presensi kelas',
+                    onTap: () {
+                      widget.onClose();
+                      Get.toNamed(AppRoutes.attendanceAdd);
+                    },
+                  ),
+                  const SizedBox(height: 6),
+                  _buildActionRow(
+                    icon: Icons.edit_note,
+                    title: 'Catatan Baru',
+                    subtitle: 'Tulis materi atau ide',
+                    onTap: () {
+                      widget.onClose();
+                      Get.toNamed(AppRoutes.noteAdd);
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
