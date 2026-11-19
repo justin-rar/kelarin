@@ -132,9 +132,12 @@ class StorageService extends GetxService {
     await _prefs.setString('app_pin', newPin);
   }
 
-  bool isPinInHistory(String candidate) {
-    final currentPin = appPin;
-    if (candidate == currentPin) return true;
-    return pinHistory.contains(candidate);
+  /// Hanya cek apakah PIN baru sama dengan PIN yang sedang aktif.
+  /// PIN lama yang sudah tidak dipakai boleh digunakan kembali.
+  bool isPinSameAsCurrent(String candidate) {
+    return candidate == appPin;
   }
+
+  /// Deprecated alias — tidak dipakai lagi, gunakan isPinSameAsCurrent
+  bool isPinInHistory(String candidate) => isPinSameAsCurrent(candidate);
 }

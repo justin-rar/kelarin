@@ -189,7 +189,7 @@ class PinController extends GetxController {
           }
         } else if (currentStep.value == PinStep.enterNew) {
           if (_storage.isPinInHistory(pin)) {
-            errorMessage.value = 'PIN baru tidak boleh sama dengan PIN sebelumnya!';
+            errorMessage.value = 'PIN baru tidak boleh sama dengan PIN saat ini!';
             enteredPin.value = '';
           } else {
             _temporaryNewPin = pin;
