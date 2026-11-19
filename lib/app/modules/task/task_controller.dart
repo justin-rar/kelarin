@@ -1,10 +1,12 @@
 import 'package:get/get.dart';
 import '../../data/models/task_model.dart';
+import '../../data/services/notification_service.dart';
 import '../../data/services/storage_service.dart';
 import '../../global_widgets/undo_toast.dart';
 
 class TaskController extends GetxController {
   final StorageService _storage = Get.find<StorageService>();
+  NotificationService get _notifications => Get.find<NotificationService>();
 
   final RxList<TaskModel> allTasks = <TaskModel>[].obs;
   final RxString searchQuery = ''.obs;
@@ -192,16 +194,45 @@ class TaskController extends GetxController {
     return allTasks.where((t) => !t.isCompleted && t.category.toLowerCase() == category.toLowerCase()).length;
   }
 
+  int _taskNotifId(String taskId) {
+    return (taskId.hashCode & 0x7FFFFFFF) % 10000000;
+  }
+
   // CRUD Operations
   Future<void> addTask(TaskModel task) async {
     await _storage.taskBox.put(task.id, task);
     loadTasks();
+
+    if (task.dateTime.isAfter(DateTime.now())) {
+      try {
+        await _notifications.scheduleNotification(
+          id: _taskNotifId(task.id),
+          title: 'Tenggat Tugas: ${task.title}',
+          body: 'Tugas "${task.title}" (${task.category}) sudah jatuh tempo.',
+          scheduledDate: task.dateTime,
+        );
+      } catch (_) {}
+    }
+
     UndoToast.show(message: 'Tugas berhasil ditambahkan');
   }
 
   Future<void> updateTask(TaskModel task) async {
     await _storage.taskBox.put(task.id, task);
     loadTasks();
+
+    try {
+      await _notifications.cancelNotification(_taskNotifId(task.id));
+      if (!task.isCompleted && task.dateTime.isAfter(DateTime.now())) {
+        await _notifications.scheduleNotification(
+          id: _taskNotifId(task.id),
+          title: 'Tenggat Tugas: ${task.title}',
+          body: 'Tugas "${task.title}" (${task.category}) sudah jatuh tempo.',
+          scheduledDate: task.dateTime,
+        );
+      }
+    } catch (_) {}
+
     UndoToast.show(message: 'Perubahan tugas disimpan');
   }
 
@@ -218,6 +249,10 @@ class TaskController extends GetxController {
       loadTasks();
 
       if (newStatus) {
+        try {
+          await _notifications.cancelNotification(_taskNotifId(taskId));
+        } catch (_) {}
+
         UndoToast.show(
           message: 'Tugas ditandai selesai',
           actionLabel: 'Urungkan',
@@ -231,6 +266,9 @@ class TaskController extends GetxController {
     final index = allTasks.indexWhere((t) => t.id == taskId);
     if (index != -1) {
       _lastDeletedTask = allTasks[index];
+      try {
+        await _notifications.cancelNotification(_taskNotifId(taskId));
+      } catch (_) {}
       await _storage.taskBox.delete(taskId);
       loadTasks();
 

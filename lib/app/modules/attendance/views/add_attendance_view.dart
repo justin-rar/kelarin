@@ -80,6 +80,14 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
         ? 'Kelas ${classController.text.trim()}'
         : dayName;
 
+    final scheduledDateTime = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      selectedTime.hour,
+      selectedTime.minute,
+    );
+
     final newAttendance = AttendanceModel(
       id: 'att_${DateTime.now().millisecondsSinceEpoch}',
       subjectName: name,
@@ -92,9 +100,15 @@ class _AddAttendanceViewState extends State<AddAttendanceView> {
       reminderActive: notifyAtStart || notify15Min || notify30Min,
       attendedMeetings: 0,
       totalMeetings: 14,
+      scheduledEpoch: scheduledDateTime.millisecondsSinceEpoch,
     );
 
-    controller.addAttendance(newAttendance);
+    controller.addAttendance(
+      newAttendance,
+      notifyAtStart: notifyAtStart,
+      notify15Min: notify15Min,
+      notify30Min: notify30Min,
+    );
     Get.back();
   }
 

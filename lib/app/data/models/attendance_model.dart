@@ -29,6 +29,11 @@ class AttendanceModel {
   @HiveField(8)
   final int totalMeetings;
 
+  /// Epoch milliseconds dari waktu mulai kuliah yang dipilih user.
+  /// Digunakan untuk menjadwalkan notifikasi lokal.
+  @HiveField(9)
+  final int? scheduledEpoch;
+
   AttendanceModel({
     required this.id,
     required this.subjectName,
@@ -39,6 +44,7 @@ class AttendanceModel {
     this.reminderActive = true,
     this.attendedMeetings = 0,
     this.totalMeetings = 14,
+    this.scheduledEpoch,
   });
 
   AttendanceModel copyWith({
@@ -51,6 +57,7 @@ class AttendanceModel {
     bool? reminderActive,
     int? attendedMeetings,
     int? totalMeetings,
+    int? scheduledEpoch,
   }) {
     return AttendanceModel(
       id: id ?? this.id,
@@ -62,6 +69,7 @@ class AttendanceModel {
       reminderActive: reminderActive ?? this.reminderActive,
       attendedMeetings: attendedMeetings ?? this.attendedMeetings,
       totalMeetings: totalMeetings ?? this.totalMeetings,
+      scheduledEpoch: scheduledEpoch ?? this.scheduledEpoch,
     );
   }
 
@@ -76,6 +84,7 @@ class AttendanceModel {
       'reminderActive': reminderActive,
       'attendedMeetings': attendedMeetings,
       'totalMeetings': totalMeetings,
+      'scheduledEpoch': scheduledEpoch,
     };
   }
 
@@ -94,6 +103,7 @@ class AttendanceModel {
       totalMeetings: map['totalMeetings'] is int
           ? map['totalMeetings']
           : (int.tryParse(map['totalMeetings']?.toString() ?? '14') ?? 14),
+      scheduledEpoch: map['scheduledEpoch'] is int ? map['scheduledEpoch'] : null,
     );
   }
 }
@@ -122,13 +132,14 @@ class AttendanceModelAdapter extends TypeAdapter<AttendanceModel> {
       totalMeetings: fields[8] is int
           ? fields[8] as int
           : (int.tryParse(fields[8]?.toString() ?? '14') ?? 14),
+      scheduledEpoch: fields[9] is int ? fields[9] as int : null,
     );
   }
 
   @override
   void write(BinaryWriter writer, AttendanceModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -146,7 +157,9 @@ class AttendanceModelAdapter extends TypeAdapter<AttendanceModel> {
       ..writeByte(7)
       ..write(obj.attendedMeetings)
       ..writeByte(8)
-      ..write(obj.totalMeetings);
+      ..write(obj.totalMeetings)
+      ..writeByte(9)
+      ..write(obj.scheduledEpoch);
   }
 }
 
