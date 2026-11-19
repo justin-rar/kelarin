@@ -15,12 +15,19 @@ class TaskController extends GetxController {
   final RxString completedSearchQuery = ''.obs;
   final RxString completedCategory = 'Semua'.obs;
 
+  // Filter Bulan & Tahun untuk halaman Rekap
+  late final RxInt completedFilterMonth;
+  late final RxInt completedFilterYear;
+
   // Undo deletion memory
   TaskModel? _lastDeletedTask;
 
   @override
   void onInit() {
     super.onInit();
+    final now = DateTime.now();
+    completedFilterMonth = now.month.obs;
+    completedFilterYear = now.year.obs;
     loadTasks();
   }
 
@@ -78,28 +85,14 @@ class TaskController extends GetxController {
     return list;
   }
 
-  // Filtered Completed Tasks by search and category
+  // Filtered Completed Tasks by bulan & tahun + search
   List<TaskModel> get filteredCompletedTasks {
     return completedTasks.where((t) {
-      // Category / Period filter
-      if (completedCategory.value != 'Semua') {
-        final now = DateTime.now();
-        final date = t.completedAt ?? t.dateTime;
-        if (completedCategory.value == 'Hari Ini') {
-          if (date.year != now.year || date.month != now.month || date.day != now.day) {
-            return false;
-          }
-        } else if (completedCategory.value == 'Minggu Ini') {
-          final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-          final start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
-          if (date.isBefore(start)) return false;
-        } else if (completedCategory.value == 'Bulan Ini') {
-          if (date.year != now.year || date.month != now.month) return false;
-        } else {
-          if (t.category.toLowerCase() != completedCategory.value.toLowerCase()) {
-            return false;
-          }
-        }
+      // Filter bulan & tahun
+      final date = t.completedAt ?? t.dateTime;
+      if (date.month != completedFilterMonth.value ||
+          date.year != completedFilterYear.value) {
+        return false;
       }
 
       // Search query
