@@ -5,6 +5,7 @@ import 'package:kelarin/app/data/models/note_model.dart';
 import 'package:kelarin/app/data/models/notification_item_model.dart';
 import 'package:kelarin/app/data/models/task_model.dart';
 import 'package:kelarin/app/data/services/gemini_service.dart';
+import 'package:kelarin/app/modules/ai/utils/ai_text_formatter.dart';
 
 void main() {
   test('State awal aplikasi adalah kosong (tidak ada data bawaan)', () {
@@ -172,5 +173,27 @@ void main() {
   test('GeminiService has valid configuration and non-empty API key', () {
     expect(GeminiService.apiKey.isNotEmpty, true);
     expect(GeminiService.apiKey.length, 53);
+  });
+
+  test('AiTextFormatter cleans asterisks and formats bold text properly', () {
+    const rawAiResponse =
+        '1. **Nama kegiatan/tugasnya apa?**\n'
+        '(Contoh: *Kerjakan laporan praktikum, Rapat himpunan*)\n'
+        '* Poin pertama\n'
+        '2 * 3 = 6';
+
+    // 1. Plain text cleaner strips all asterisks
+    final cleaned = AiTextFormatter.cleanPlainText(rawAiResponse);
+    expect(cleaned.contains('*'), false);
+    expect(cleaned.contains('• Poin pertama'), true);
+    expect(cleaned.contains('2 × 3'), true);
+    expect(cleaned.contains('1. Nama kegiatan/tugasnya apa?'), true);
+
+    // 2. Rich span builder strips all asterisks and bolds headers
+    final spans = AiTextFormatter.buildSpans(rawAiResponse);
+    for (final span in spans) {
+      final text = span.toPlainText();
+      expect(text.contains('*'), false);
+    }
   });
 }

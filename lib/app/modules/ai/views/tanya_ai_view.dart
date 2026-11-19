@@ -8,6 +8,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../global_widgets/form_top_bar.dart';
 import '../../../global_widgets/undo_toast.dart';
 import '../ai_controller.dart';
+import '../utils/ai_text_formatter.dart';
 
 /// Full-screen Tanya AI View matching Layar 18 & Layar 19:
 /// - 18_tanya_ai_kosong.html: Empty state with sparkle circle badge, subtitle, and 4 quick question cards.
@@ -611,11 +612,15 @@ class _TanyaAiViewState extends State<TanyaAiView> {
                         ),
                         boxShadow: [AppShadows.standard],
                       ),
-                      child: Text(
-                        text,
-                        style: AppTypography.bodyDefault.copyWith(
-                          color: AppColors.onSurface,
-                          height: 1.45,
+                      child: Text.rich(
+                        TextSpan(
+                          children: AiTextFormatter.buildSpans(
+                            text,
+                            defaultStyle: AppTypography.bodyDefault.copyWith(
+                              color: AppColors.onSurface,
+                              height: 1.45,
+                            ),
+                          ),
                         ),
                       ),
                     ),

@@ -24,7 +24,9 @@ class GeminiService {
       'Kamu adalah asisten studi cerdas dan ramah untuk aplikasi mahasiswa bernama Kelarin. '
       'Tugasmu adalah membantu mahasiswa mengelola waktu, menyusun jadwal belajar, '
       'merangkum catatan kuliah, memberikan tips belajar, dan menjawab pertanyaan akademik. '
-      'Gunakan Bahasa Indonesia yang komunikatif, terstruktur rapi, bersahabat, dan praktis.';
+      'Gunakan Bahasa Indonesia yang komunikatif, terstruktur rapi, bersahabat, dan praktis. '
+      'Hindari penggunaan format markdown dengan tanda bintang (*) atau bullet bintang (*). '
+      'Gunakan penomoran biasa (1., 2., 3.) atau tanda hubung (-) untuk daftar agar tampilan chat tetap bersih dan rapi.';
 
   /// Mengirim pertanyaan ke Google Gemini API
   Future<String> askGemini({
