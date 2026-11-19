@@ -5,6 +5,7 @@ import '../../../core/constants/app_dimens.dart';
 import '../../../core/constants/app_shadows.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../global_widgets/app_header.dart';
+import '../../../global_widgets/app_search_bar.dart';
 import '../../../global_widgets/confirmation_dialog.dart';
 import '../../../global_widgets/empty_state.dart';
 import '../../../global_widgets/page_title_row.dart';
@@ -53,7 +54,18 @@ class CompletedTasksView extends GetView<TaskController> {
                     const PageTitleRow(title: 'Rekap'),
                     const SizedBox(height: 16),
 
-                    // 2. Filter Bulan (dengan opsi Semua) & Tahun (2026 - 2045)
+                    // 2. Search Bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppDimens.margin),
+                      child: AppSearchBar(
+                        placeholder: 'Cari tugas selesai...',
+                        onChanged: (val) => controller.completedSearchQuery.value = val,
+                        onClear: () => controller.completedSearchQuery.value = '',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // 3. Filter Bulan (dengan opsi Semua) & Tahun (2026 - 2045)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: AppDimens.margin),
                       child: Obx(() => Row(
@@ -103,9 +115,12 @@ class CompletedTasksView extends GetView<TaskController> {
                       final tahunLabel = controller.completedFilterYear.value.toString();
 
                       if (isEmpty) {
-                        final emptySubtitle = isSemuaBulan
-                            ? 'Tidak ada tugas yang diselesaikan pada tahun $tahunLabel.'
-                            : 'Tidak ada tugas yang diselesaikan pada $bulanLabel $tahunLabel.';
+                        final isSearching = controller.completedSearchQuery.value.trim().isNotEmpty;
+                        final emptySubtitle = isSearching
+                            ? 'Tidak ada tugas selesai yang cocok dengan "${controller.completedSearchQuery.value}".'
+                            : (isSemuaBulan
+                                ? 'Tidak ada tugas yang diselesaikan pada tahun $tahunLabel.'
+                                : 'Tidak ada tugas yang diselesaikan pada $bulanLabel $tahunLabel.');
 
                         return Padding(
                           padding: const EdgeInsets.symmetric(
@@ -113,8 +128,8 @@ class CompletedTasksView extends GetView<TaskController> {
                             vertical: 8,
                           ),
                           child: EmptyStateCard(
-                            icon: Icons.task_alt_rounded,
-                            title: 'Belum Ada Tugas Selesai',
+                            icon: isSearching ? Icons.search_off_rounded : Icons.task_alt_rounded,
+                            title: isSearching ? 'Tugas Tidak Ditemukan' : 'Belum Ada Tugas Selesai',
                             subtitle: emptySubtitle,
                           ),
                         );
