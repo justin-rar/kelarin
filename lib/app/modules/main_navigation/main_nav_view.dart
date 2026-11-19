@@ -43,13 +43,13 @@ class MainNavigationView extends GetView<MainNavController> {
             );
           }),
 
-          // Aksi Cepat Overlay — Fade masuk responsif instan tanpa lag blur
+          // Aksi Cepat Overlay — Blur background muncul instan & ultra-responsif (sub-100ms)
           Obx(() {
             final isOpen = controller.isAksiCepatOpen.value;
             return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 180),
-              switchInCurve: Curves.easeOutQuad,
-              switchOutCurve: Curves.easeInQuad,
+              duration: const Duration(milliseconds: 90),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
               transitionBuilder: (child, animation) => FadeTransition(
                 opacity: animation,
                 child: child,

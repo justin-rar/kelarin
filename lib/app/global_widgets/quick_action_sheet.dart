@@ -28,7 +28,7 @@ class _QuickActionSheetState extends State<QuickActionSheet>
     super.initState();
     _cardController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 180),
+      duration: const Duration(milliseconds: 200),
     );
     _cardSlideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.08),
@@ -50,14 +50,14 @@ class _QuickActionSheetState extends State<QuickActionSheet>
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // 40% Scrim dengan blur statis (bebas delay & bebas lag)
+        // 40% Scrim dengan blur statis instan
         Positioned.fill(
           child: GestureDetector(
             onTap: widget.onClose,
             behavior: HitTestBehavior.opaque,
             child: ClipRect(
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                filter: ImageFilter.blur(sigmaX: 5.5, sigmaY: 5.5),
                 child: Container(color: AppColors.scrim),
               ),
             ),
