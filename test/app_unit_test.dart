@@ -4,17 +4,21 @@ import 'package:kelarin/app/data/models/attendance_model.dart';
 import 'package:kelarin/app/data/models/note_model.dart';
 import 'package:kelarin/app/data/models/notification_item_model.dart';
 import 'package:kelarin/app/data/models/task_model.dart';
-import 'package:kelarin/app/data/services/dummy_data_service.dart';
 
 void main() {
-  test('DummyDataService provides initial tasks matching Stitch specs', () {
-    final tasks = DummyDataService.initialTasks;
-    expect(tasks.isNotEmpty, true);
+  test('State awal aplikasi adalah kosong (tidak ada data bawaan)', () {
+    // Verifikasi bahwa model dapat dibuat kosong tanpa data dummy bawaan
+    final emptyTask = TaskModel.fromMap({});
+    expect(emptyTask.title, '');
+    expect(emptyTask.isCompleted, false);
 
-    final firstTask = tasks.first;
-    expect(firstTask.title, 'Review proposal desain UI');
-    expect(firstTask.priority, '! Tinggi');
-    expect(firstTask.category, 'Kuliah');
+    final emptyAtt = AttendanceModel.fromMap({});
+    expect(emptyAtt.subjectName, '');
+    expect(emptyAtt.attendedMeetings, 0);
+
+    final emptyNote = NoteModel.fromMap({});
+    expect(emptyNote.title, '');
+    expect(emptyNote.isPinned, false);
   });
 
   test('TaskModel serializes and deserializes correctly', () {
@@ -51,52 +55,54 @@ void main() {
       return history.contains(candidate);
     }
 
-    // Old pin cannot be reused
+    // PIN aktif tidak boleh dipakai ulang
     expect(isPinInHistory('1234'), true);
-    // Historical pin cannot be reused
+    // PIN lama di history tidak boleh dipakai ulang (aturan lama — test tetap valid)
     expect(isPinInHistory('0000'), true);
     expect(isPinInHistory('4321'), true);
-    // Fresh pin is allowed
+    // PIN baru yang belum pernah dipakai boleh
     expect(isPinInHistory('9876'), false);
 
-    // Forgot PIN personal identity verification
-    const registeredNim = '123220001';
-    const registeredEmail = 'titut.student@upnyk.ac.id';
+    // Verifikasi pemulihan PIN via pertanyaan keamanan
     const registeredAnswer = 'siti';
 
-    bool verifyRecoveryInfo({
-      required String enteredNim,
-      required String enteredEmail,
-      required String enteredAnswer,
-    }) {
-      final isNimMatch = enteredNim.trim() == registeredNim;
-      final isEmailMatch = enteredEmail.trim().toLowerCase() == registeredEmail;
-      final isAnswerMatch = enteredAnswer.trim().toLowerCase() == registeredAnswer;
-      return isNimMatch && (isEmailMatch || isAnswerMatch);
+    bool verifyRecoveryInfo({required String enteredAnswer}) {
+      return enteredAnswer.trim().toLowerCase() == registeredAnswer;
     }
 
-    expect(
-      verifyRecoveryInfo(
-        enteredNim: '123220001',
-        enteredEmail: 'titut.student@upnyk.ac.id',
-        enteredAnswer: 'siti',
-      ),
-      true,
-    );
-
-    // Mismatched NIM fails verification
-    expect(
-      verifyRecoveryInfo(
-        enteredNim: '999999999',
-        enteredEmail: 'titut.student@upnyk.ac.id',
-        enteredAnswer: 'siti',
-      ),
-      false,
-    );
+    expect(verifyRecoveryInfo(enteredAnswer: 'siti'), true);
+    expect(verifyRecoveryInfo(enteredAnswer: 'SITI'), true);
+    expect(verifyRecoveryInfo(enteredAnswer: 'budi'), false);
   });
 
   test('Notification unread count accurately calculates unread items', () {
-    final notifs = DummyDataService.initialNotifications;
+    final notifs = [
+      NotificationItemModel(
+        id: 'n1',
+        title: 'Test',
+        message: 'msg',
+        timestamp: DateTime.now(),
+        isRead: false,
+        type: 'TUGAS',
+      ),
+      NotificationItemModel(
+        id: 'n2',
+        title: 'Test2',
+        message: 'msg2',
+        timestamp: DateTime.now(),
+        isRead: false,
+        type: 'PRESENSI',
+      ),
+      NotificationItemModel(
+        id: 'n3',
+        title: 'Test3',
+        message: 'msg3',
+        timestamp: DateTime.now(),
+        isRead: true,
+        type: 'SISTEM',
+      ),
+    ];
+
     final initialUnread = notifs.where((n) => !n.isRead).length;
     expect(initialUnread, 2);
 
@@ -137,3 +143,4 @@ void main() {
     expect(emptyNotif.type, 'TUGAS');
   });
 }
+

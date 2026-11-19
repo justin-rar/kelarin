@@ -73,16 +73,15 @@ class StorageService extends GetxService {
   }
 
   // Profile & PIN helpers
-  String get userName => _prefs.getString('user_name') ?? 'Titut';
-  String get userNim => _prefs.getString('user_nim') ?? '123220001';
-  String get userEmail => _prefs.getString('user_email') ?? 'titut.student@upnyk.ac.id';
-  String get userMajor => _prefs.getString('user_major') ?? 'Sistem Informasi';
-  String get userSemester => _prefs.getString('user_semester') ?? 'Semester 5';
+  String get userName => _prefs.getString('user_name') ?? '';
+  String get userNim => _prefs.getString('user_nim') ?? '';
+  String get userEmail => _prefs.getString('user_email') ?? '';
+  String get userMajor => _prefs.getString('user_major') ?? '';
+  String get userSemester => _prefs.getString('user_semester') ?? '';
   bool get isPinEnabled => _prefs.getBool('is_pin_enabled') ?? false;
-  String get appPin => _prefs.getString('app_pin') ?? '1234';
+  String get appPin => _prefs.getString('app_pin') ?? '';
   bool get isProfileSetupDone => _prefs.getBool('is_profile_setup_done') ?? false;
-  String get securityQuestion =>
-      _prefs.getString('security_question') ?? 'Nama Ibu Kandung';
+  String get securityQuestion => _prefs.getString('security_question') ?? '';
   String get securityAnswer => _prefs.getString('security_answer') ?? '';
   List<String> get pinHistory => _prefs.getStringList('pin_history') ?? [];
   String? get profileImagePath => _prefs.getString('profile_image_path');
