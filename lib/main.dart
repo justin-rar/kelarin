@@ -28,7 +28,7 @@ class KelarinApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // Sesuai materi Modul VIII: Menggunakan GetMaterialApp untuk GetX
     return GetMaterialApp(
-      title: 'TaskFlow (Kelarin)',
+      title: 'Kelarin',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       initialRoute: AppPages.initial,

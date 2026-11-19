@@ -19,7 +19,7 @@ import '../profile_controller.dart';
 /// - Name and Edit Profil pill button
 /// - 2 Stat Tiles (Tugas Selesai in stat-light, Tugas Aktif in stat-dark) with SineWavePainter
 /// - KEAMANAN group (Kunci Aplikasi PIN toggle, Ubah PIN row, Notifikasi toggle)
-/// - DATA group (Bersihkan Tugas Selesai row, Tentang TaskFlow row)
+/// - DATA group (Bersihkan Tugas Selesai row, Tentang Kelarin row)
 /// - Full-width "Keluar dari Akun" pill button
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -303,7 +303,7 @@ class _ProfileViewState extends State<ProfileView> {
                         ),
                         SettingsRowItem(
                           icon: Icons.info,
-                          title: 'Tentang TaskFlow',
+                          title: 'Tentang Kelarin',
                           subtitle: 'Versi 1.0.0 (Build 240)',
                           onTap: () => Get.toNamed(AppRoutes.profileAbout),
                         ),

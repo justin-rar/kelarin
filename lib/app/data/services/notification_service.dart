@@ -11,7 +11,7 @@ class NotificationService extends GetxService {
   static const AndroidNotificationChannel _defaultChannel = AndroidNotificationChannel(
     'kelarin_channel',
     'Kelarin Notifications',
-    description: 'Pengingat tugas dan absensi TaskFlow',
+    description: 'Pengingat tugas dan absensi Kelarin',
     importance: Importance.max,
     playSound: true,
     enableVibration: true,
@@ -84,7 +84,7 @@ class NotificationService extends GetxService {
       const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
         'kelarin_channel',
         'Kelarin Notifications',
-        channelDescription: 'Pengingat tugas dan absensi TaskFlow',
+        channelDescription: 'Pengingat tugas dan absensi Kelarin',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
@@ -131,7 +131,7 @@ class NotificationService extends GetxService {
       const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
         'kelarin_channel',
         'Kelarin Notifications',
-        channelDescription: 'Pengingat tugas dan absensi TaskFlow',
+        channelDescription: 'Pengingat tugas dan absensi Kelarin',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,

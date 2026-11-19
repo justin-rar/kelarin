@@ -7,9 +7,9 @@ import '../../../core/theme/app_typography.dart';
 import '../../../global_widgets/form_top_bar.dart';
 import '../../../global_widgets/settings_group.dart';
 
-/// Tentang TaskFlow screen matching Layar 23 (23_tentang.html):
-/// - FormTopBar(title: 'Tentang TaskFlow')
-/// - Brand Hero Visual (84x84 rounded 22px card with real app logo, "TaskFlow", tagline, and Build pill)
+/// Tentang Kelarin screen matching Layar 23 (23_tentang.html):
+/// - FormTopBar(title: 'Tentang Kelarin')
+/// - Brand Hero Visual (84x84 rounded 22px card with real app logo, "Kelarin", tagline, and Build pill)
 /// - Section "Tentang Aplikasi" Card
 /// - Section "INFORMASI & TAUTAN" Group (Syarat & Ketentuan, Kebijakan Privasi, Lisensi, Situs Web)
 /// - Section "DUKUNGAN" Group (Hubungi Dukungan, Beri Nilai, Periksa Pembaruan with check_circle)
@@ -34,7 +34,7 @@ class AboutView extends StatelessWidget {
           children: [
             // Fixed Top Bar
             FormTopBar(
-              title: 'Tentang TaskFlow',
+              title: 'Tentang Kelarin',
               onBack: () => Get.back(),
             ),
 
@@ -75,7 +75,7 @@ class AboutView extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'TaskFlow',
+                        'Kelarin',
                         style: AppTypography.headlineH1.copyWith(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
@@ -156,7 +156,7 @@ class AboutView extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'TaskFlow dirancang khusus untuk mahasiswa agar dapat mengelola jadwal kuliah, agenda tugas, presensi harian, serta catatan belajar secara rapi dan produktif dalam satu aplikasi yang terintegrasi.',
+                          'Kelarin dirancang khusus untuk mahasiswa agar dapat mengelola jadwal kuliah, agenda tugas, presensi harian, serta catatan belajar secara rapi dan produktif dalam satu aplikasi yang terintegrasi.',
                           style: AppTypography.bodyDefault.copyWith(
                             fontSize: 14,
                             color: AppColors.secondary,
@@ -176,7 +176,7 @@ class AboutView extends StatelessWidget {
                       SettingsRowItem(
                         icon: Icons.description,
                         title: 'Syarat & Ketentuan Layanan',
-                        subtitle: 'Ketentuan penggunaan aplikasi TaskFlow',
+                        subtitle: 'Ketentuan penggunaan aplikasi Kelarin',
                         onTap: () => _showInfoToast('Syarat & Ketentuan Layanan dibuka'),
                       ),
                       SettingsRowItem(
@@ -194,13 +194,13 @@ class AboutView extends StatelessWidget {
                       SettingsRowItem(
                         icon: Icons.language,
                         title: 'Situs Web Resmi',
-                        subtitle: 'taskflow.id',
+                        subtitle: 'kelarin.id',
                         trailing: const Icon(
                           Icons.open_in_new,
                           size: 18,
                           color: AppColors.outline,
                         ),
-                        onTap: () => _showInfoToast('Membuka https://taskflow.id'),
+                        onTap: () => _showInfoToast('Membuka https://kelarin.id'),
                       ),
                     ],
                   ),
@@ -214,14 +214,14 @@ class AboutView extends StatelessWidget {
                       SettingsRowItem(
                         icon: Icons.mail,
                         title: 'Hubungi Dukungan',
-                        subtitle: 'bantuan@taskflow.id',
-                        onTap: () => _showInfoToast('Email bantuan: bantuan@taskflow.id'),
+                        subtitle: 'bantuan@kelarin.id',
+                        onTap: () => _showInfoToast('Email bantuan: bantuan@kelarin.id'),
                       ),
                       SettingsRowItem(
                         icon: Icons.grade,
                         title: 'Beri Nilai & Ulasan',
                         subtitle: 'Dukung pengembangan aplikasi',
-                        onTap: () => _showInfoToast('Terima kasih telah mendukung TaskFlow!'),
+                        onTap: () => _showInfoToast('Terima kasih telah mendukung Kelarin!'),
                       ),
                       SettingsRowItem(
                         icon: Icons.sync,
@@ -232,7 +232,7 @@ class AboutView extends StatelessWidget {
                           size: 18,
                           color: AppColors.primary,
                         ),
-                        onTap: () => _showInfoToast('TaskFlow v1.0.0 adalah versi terbaru'),
+                        onTap: () => _showInfoToast('Kelarin v1.0.0 adalah versi terbaru'),
                       ),
                     ],
                   ),
@@ -242,7 +242,7 @@ class AboutView extends StatelessWidget {
                   // Footer Copyright Note
                   Center(
                     child: Text(
-                      '© 2025 TaskFlow Indonesia. Hak Cipta Dilindungi.',
+                      '© 2025 Kelarin Indonesia. Hak Cipta Dilindungi.',
                       style: AppTypography.captionMeta.copyWith(
                         fontSize: 12,
                         color: AppColors.outline,

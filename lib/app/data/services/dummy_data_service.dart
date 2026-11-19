@@ -180,8 +180,8 @@ class DummyDataService {
       ),
       NotificationItemModel(
         id: 'notif-3',
-        title: 'TaskFlow Siap Digunakan',
-        message: 'Selamat datang di TaskFlow! Sinkronisasi modul GetX dan Hive berhasil.',
+        title: 'Kelarin Siap Digunakan',
+        message: 'Selamat datang di Kelarin! Sinkronisasi modul GetX dan Hive berhasil.',
         timestamp: now.subtract(const Duration(days: 1)),
         isRead: true,
         type: 'SISTEM',

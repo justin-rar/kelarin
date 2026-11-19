@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_shadows.dart';
 
-/// Design tokens for colors based on Google Stitch TaskFlow Design System.
+/// Design tokens for colors based on Google Stitch Kelarin Design System.
 /// Acuan: design/DESIGN.md
 class AppColors {
   AppColors._();

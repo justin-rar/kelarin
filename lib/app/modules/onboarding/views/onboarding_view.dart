@@ -70,7 +70,7 @@ class OnboardingView extends GetView<OnboardingController> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Selamat Datang di TaskFlow',
+                  'Selamat Datang di Kelarin',
                   textAlign: TextAlign.center,
                   style: AppTypography.headlineH1.copyWith(
                     fontSize: 22,

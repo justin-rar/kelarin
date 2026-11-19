@@ -70,7 +70,7 @@ class SplashView extends GetView<SplashController> {
 
               // Title
               const Text(
-                'TaskFlow',
+                'Kelarin',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,

@@ -34,9 +34,8 @@ class OnboardingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    nameController.text = _storage.userName.isNotEmpty ? _storage.userName : '';
-    securityAnswerController.text =
-        _storage.securityAnswer.isNotEmpty ? _storage.securityAnswer : '';
+    // Jangan pre-fill dari storage karena state awal kosong
+    // Field dibiarkan kosong agar user mengisi sendiri
     if (_storage.securityQuestion.isNotEmpty &&
         securityQuestions.contains(_storage.securityQuestion)) {
       selectedSecurityQuestion.value = _storage.securityQuestion;
@@ -118,19 +117,13 @@ class OnboardingController extends GetxController {
     } else if (currentStep.value == 2) {
       // Step 2: Confirm PIN
       if (pin == temporaryNewPin.value) {
-        // Save profile
+        // Save profile (hanya nama, field lain kosong saat awal)
         await _storage.setProfile(
           name: nameController.text.trim(),
-          nim: _storage.userNim.isNotEmpty ? _storage.userNim : '123220001',
-          email: _storage.userEmail.isNotEmpty
-              ? _storage.userEmail
-              : 'titut.student@upnyk.ac.id',
-          major: _storage.userMajor.isNotEmpty
-              ? _storage.userMajor
-              : 'Sistem Informasi',
-          semester: _storage.userSemester.isNotEmpty
-              ? _storage.userSemester
-              : 'Semester 5',
+          nim: '',
+          email: '',
+          major: '',
+          semester: '',
         );
 
         // Save security info

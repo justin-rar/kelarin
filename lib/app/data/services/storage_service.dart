@@ -5,7 +5,6 @@ import '../models/task_model.dart';
 import '../models/attendance_model.dart';
 import '../models/note_model.dart';
 import '../models/notification_item_model.dart';
-import 'dummy_data_service.dart';
 
 class StorageService extends GetxService {
   late SharedPreferences _prefs;
@@ -47,9 +46,9 @@ class StorageService extends GetxService {
     // 4. Initialize SharedPreferences
     _prefs = await SharedPreferences.getInstance();
 
-    // 5. Seed initial data if first run
+    // 5. Seed initial data HANYA jika belum pernah setup profil (state awal kosong)
     final isInitialized = _prefs.getBool('is_app_initialized') ?? false;
-    if (!isInitialized || _taskBox.isEmpty) {
+    if (!isInitialized) {
       await _seedInitialData();
       await _prefs.setBool('is_app_initialized', true);
     }
@@ -58,37 +57,16 @@ class StorageService extends GetxService {
   }
 
   Future<void> _seedInitialData() async {
-    await _taskBox.clear();
-    for (final task in DummyDataService.initialTasks) {
-      await _taskBox.put(task.id, task);
-    }
+    // State awal kosong — tidak ada dummy data
+    // Boxes dibuka kosong, user akan mengisi data sendiri
 
-    await _attendanceBox.clear();
-    for (final att in DummyDataService.initialAttendances) {
-      await _attendanceBox.put(att.id, att);
-    }
-
-    await _noteBox.clear();
-    for (final note in DummyDataService.initialNotes) {
-      await _noteBox.put(note.id, note);
-    }
-
-    await _notificationBox.clear();
-    for (final notif in DummyDataService.initialNotifications) {
-      await _notificationBox.put(notif.id, notif);
-    }
-
-    // Default Profile Data
+    // Default Profile Data (kosong, akan diisi saat onboarding)
     if (!_prefs.containsKey('user_name')) {
-      await _prefs.setString('user_name', 'Titut');
-      await _prefs.setString('user_nim', '123220001');
-      await _prefs.setString('user_email', 'titut.student@upnyk.ac.id');
-      await _prefs.setString('user_major', 'Sistem Informasi');
-      await _prefs.setString('user_semester', 'Semester 5');
+      await _prefs.setString('user_name', '');
       await _prefs.setBool('is_pin_enabled', false);
-      await _prefs.setString('app_pin', '1234');
-      await _prefs.setString('security_question', 'Nama Ibu Kandung');
-      await _prefs.setString('security_answer', 'Siti');
+      await _prefs.setString('app_pin', '');
+      await _prefs.setString('security_question', '');
+      await _prefs.setString('security_answer', '');
       await _prefs.setBool('is_profile_setup_done', false);
       await _prefs.setStringList('pin_history', []);
     }
