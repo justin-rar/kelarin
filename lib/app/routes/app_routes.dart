@@ -11,7 +11,6 @@ abstract class AppRoutes {
   static const noteEdit = '/note/edit';
   static const profile = '/profile';
   static const profileEdit = '/profile/edit';
-  static const profileAbout = '/profile/about';
   static const notification = '/notification';
 }
 

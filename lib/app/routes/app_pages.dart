@@ -13,7 +13,6 @@ import '../modules/onboarding/views/onboarding_view.dart';
 import '../modules/pin/pin_binding.dart';
 import '../modules/pin/pin_view.dart';
 import '../modules/profile/profile_binding.dart';
-import '../modules/profile/views/about_view.dart';
 import '../modules/profile/views/edit_profile_view.dart';
 import '../modules/profile/views/profile_view.dart';
 import '../modules/splash/splash_binding.dart';
@@ -138,12 +137,6 @@ class AppPages {
       name: AppRoutes.profileEdit,
       page: () => const EditProfileView(),
       binding: ProfileBinding(),
-      customTransition: _slideRightFade,
-      transitionDuration: _kTransitionDuration,
-    ),
-    GetPage(
-      name: AppRoutes.profileAbout,
-      page: () => const AboutView(),
       customTransition: _slideRightFade,
       transitionDuration: _kTransitionDuration,
     ),

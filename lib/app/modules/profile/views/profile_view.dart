@@ -325,12 +325,6 @@ class _ProfileViewState extends State<ProfileView> {
                           subtitle: 'Kosongkan seluruh tugas, presensi, & catatan',
                           onTap: _showClearAllDataDialog,
                         ),
-                        SettingsRowItem(
-                          icon: Icons.info,
-                          title: 'Tentang Kelarin',
-                          subtitle: 'Versi 1.0.0 (Build 240)',
-                          onTap: () => Get.toNamed(AppRoutes.profileAbout),
-                        ),
                       ],
                     ),
 
