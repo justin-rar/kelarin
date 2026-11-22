@@ -5,7 +5,7 @@ allprojects {
     }
 }
 
-// Force JVM 17 for all subprojects — fixes JVM target mismatch from flutter_timezone plugin
+// Force JVM 17 and compileSdk 36 for all subprojects
 subprojects {
     afterEvaluate {
         // Apply to Android Java compile tasks
@@ -17,6 +17,15 @@ subprojects {
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
             compilerOptions {
                 jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            }
+        }
+        // Force compileSdk 36 for all Android library plugins (e.g. file_picker)
+        if (project.hasProperty("android")) {
+            val androidExt = project.extensions.findByName("android")
+            if (androidExt is com.android.build.gradle.BaseExtension) {
+                if (androidExt.compileSdkVersion != null && androidExt.compileSdkVersion!!.substringAfter("android-").toIntOrNull() ?: 0 < 36) {
+                    androidExt.compileSdkVersion(36)
+                }
             }
         }
     }
