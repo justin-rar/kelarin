@@ -314,6 +314,18 @@ class _ProfileViewState extends State<ProfileView> {
                       title: 'DATA',
                       items: [
                         SettingsRowItem(
+                          icon: Icons.cloud_upload_outlined,
+                          title: 'Cadangkan Data (Backup)',
+                          subtitle: 'Simpan ke Google Drive atau penyimpanan lain',
+                          onTap: controller.backupData,
+                        ),
+                        SettingsRowItem(
+                          icon: Icons.cloud_download_outlined,
+                          title: 'Pulihkan Data (Restore)',
+                          subtitle: 'Kembalikan data dari berkas cadangan',
+                          onTap: controller.restoreData,
+                        ),
+                        SettingsRowItem(
                           icon: Icons.cleaning_services,
                           title: 'Bersihkan Tugas Selesai',
                           subtitle: 'Arsipkan atau hapus rekap tugas lama',
